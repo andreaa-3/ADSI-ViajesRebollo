@@ -1,7 +1,6 @@
 package org.irlab.model.entities;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 
 import jakarta.persistence.Column;
@@ -29,7 +28,7 @@ public class Paquete extends Plantilla { // Extiende de Plantilla?
     private String destination;
 
     @Column(nullable = false)
-    private LocalDate starDate;
+    private LocalDate startDate;
 
     @Column(nullable = false)
     private LocalDate endDate;
@@ -60,90 +59,100 @@ public class Paquete extends Plantilla { // Extiende de Plantilla?
         this.startDate = startDate;
         this.endDate = endDate;
         this.requiredPeople = requiredPeople;
-        this.lodging = lodging;
-        this.transports = transports;
+        this.accommodation = accomodation;
+        this.transportation = transportation;
         this.activities = activities;
         this.price = price;
     }
 
-
-    public Date getBegin() {
-        return begin;
+    public Long getId() {
+        return id;
     }
-
-    public void setBegin(Date begin) {
-        this.begin = begin;
+    
+    public void setId(Long id) { // Creo que no es necesario
+        // No se puede modificar el id, es autogenerado.
+        this.id = id;
     }
-
-    public Date getEnd() {
-        return end;
-    }
-
-    public void setEnd(Date end) {
-        this.end = end;
-    }
-
-    public Long getPeople() {
-        return people;
-    }
-
-    public void setPeople(Long people) {
-        this.people = people;
-    }
-
-    public Long getPrize() {
-        return prize;
-    }
-
-    public void setPrize(Long prize) {
-        this.prize = prize;
-    }
-
+    
     public String getName() {
         return name;
     }
-
+    
     public void setName(String name) {
         this.name = name;
     }
-
+    
     public String getDescription() {
         return description;
     }
-
+    
     public void setDescription(String description) {
         this.description = description;
     }
-
+    
     public String getDestination() {
         return destination;
     }
-
+    
     public void setDestination(String destination) {
         this.destination = destination;
     }
-
+    
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+    
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
+    
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+    
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
+    }
+    
+    public int getRequiredPeople() {
+        return requiredPeople;
+    }
+    
+    public void setRequiredPeople(int requiredPeople) {
+        this.requiredPeople = requiredPeople;
+    }
+    
     public String getAccommodation() {
         return accommodation;
     }
-
+    
     public void setAccommodation(String accommodation) {
         this.accommodation = accommodation;
     }
-
+    
     public List<String> getTransportation() {
         return transportation;
     }
-
+    
     public void setTransportation(List<String> transportation) {
         this.transportation = transportation;
     }
-
+    
     public List<String> getActivities() {
         return activities;
     }
-
+    
     public void setActivities(List<String> activities) {
         this.activities = activities;
     }
+    
+    public double getPrice() {
+        return price;
+    }
+    
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+   
 }
