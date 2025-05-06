@@ -1,5 +1,6 @@
 package org.irlab.model.entities;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.Column;
@@ -16,23 +17,25 @@ public class Plantilla {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id; // Es la clave primaria (es autogenerado).
 
-     @Column(unique = true, nullable = false)
-    public String name;
+    @Column(unique = true, nullable = false)
+    private String name;
 
     @Column(nullable = false)
-    public String description;
+    private String description;
 
     @Column(nullable = false)
-    public String destination;
+    private String destination;// A diferencia del paquete, por defecto
+                        // cada plantilla solo tienen un destino.
 
     @Column(nullable = false)
-    public String accommodation;
+    private String accommodation; // A diferencia del paquete, por defecto
+                        // cada plantilla solo tienen un alojamiento.
 
     @ElementCollection
-    public List<String> transportation;
+    private List<String> transportation = new ArrayList<>();
 
     @ElementCollection
-    public List<String> activities;
+    private List<String> activities = new ArrayList<>();
 
 
     public Plantilla() {
@@ -52,10 +55,6 @@ public class Plantilla {
 
     public Long getId() {
         return id;
-    }
-
-    public void setId(Long id) { // Creo que no es necesario
-        this.id = id; // No se puede modificar el id, es autogenerado.
     }
 
     public String getName() {

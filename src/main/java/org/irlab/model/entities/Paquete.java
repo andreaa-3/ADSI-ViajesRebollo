@@ -1,6 +1,7 @@
 package org.irlab.model.entities;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.Column;
@@ -12,7 +13,10 @@ import jakarta.persistence.Id;
 
 
 @Entity
-public class Paquete extends Plantilla { // Extiende de Plantilla? 
+public class Paquete { 
+    // Se Hace de manera independiente de la clase Plantilla
+    // Muchos atributos puede que sean nulos? 
+        // Ej: Un paquete que no tenga alojamiento, o que no tenga transporte?
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,8 +28,8 @@ public class Paquete extends Plantilla { // Extiende de Plantilla?
     @Column(nullable = false)
     private String description;
 
-    @Column(nullable = false)
-    private String destination;
+    @ElementCollection
+    private List<String> destination;
 
     @Column(nullable = false)
     private LocalDate startDate;
@@ -36,30 +40,30 @@ public class Paquete extends Plantilla { // Extiende de Plantilla?
     @Column(nullable = false)
     private int requiredPeople;
 
-    @Column(nullable = false) // Puede haber un viaje sin alojamiento?
-    private String accommodation;
+    @ElementCollection
+    private List<String> accommodation = new ArrayList<>();
 
     @ElementCollection
-    private List<String> transportation;
+    private List<String> transportation = new ArrayList<>();
 
     @ElementCollection
-    private List<String> activities;
+    private List<String> activities = new ArrayList<>();
 
     @Column(nullable = false)
     private double price;
 
     public Paquete() {}
 
-    public Paquete(String name, String description, String destination,
+    public Paquete(String name, String description, List<String> destination,
                          LocalDate startDate, LocalDate endDate, int requiredPeople,
-                         String accomodation, List<String> transportation, List<String> activities, double price) {
+                         List<String> accommodation, List<String> transportation, List<String> activities, double price) {
         this.name = name;
         this.description = description;
         this.destination = destination;
         this.startDate = startDate;
         this.endDate = endDate;
         this.requiredPeople = requiredPeople;
-        this.accommodation = accomodation;
+        this.accommodation = accommodation;
         this.transportation = transportation;
         this.activities = activities;
         this.price = price;
@@ -67,11 +71,6 @@ public class Paquete extends Plantilla { // Extiende de Plantilla?
 
     public Long getId() {
         return id;
-    }
-    
-    public void setId(Long id) { // Creo que no es necesario
-        // No se puede modificar el id, es autogenerado.
-        this.id = id;
     }
     
     public String getName() {
@@ -90,11 +89,11 @@ public class Paquete extends Plantilla { // Extiende de Plantilla?
         this.description = description;
     }
     
-    public String getDestination() {
+    public List<String> getDestination() {
         return destination;
     }
     
-    public void setDestination(String destination) {
+    public void setDestination(List<String> destination) {
         this.destination = destination;
     }
     
@@ -122,11 +121,11 @@ public class Paquete extends Plantilla { // Extiende de Plantilla?
         this.requiredPeople = requiredPeople;
     }
     
-    public String getAccommodation() {
+    public List<String> getAccommodation() {
         return accommodation;
     }
     
-    public void setAccommodation(String accommodation) {
+    public void setAccommodation(List<String> accommodation) {
         this.accommodation = accommodation;
     }
     

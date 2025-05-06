@@ -1,15 +1,20 @@
 package org.irlab.model.entities;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 
 @Entity
-public class Plan { //Extiende de Plantilla?
+public class Plan { //Extiende de Plantilla y de Paquete? 
+    // Creo que no es necesario que extienda, se puede manejar la lógica en el servicio.
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,8 +26,8 @@ public class Plan { //Extiende de Plantilla?
     @Column(nullable = false)
     private String description;
 
-    @Column(nullable = false)
-    private String destination;
+    @ElementCollection
+    private List<String> destination = new ArrayList<>();
 
     @Column(nullable = false)
     private LocalDate startDate;
@@ -30,23 +35,40 @@ public class Plan { //Extiende de Plantilla?
     @Column(nullable = false)
     private LocalDate endDate;
 
-    @Column(nullable = false)
-    private String accommodation; // En la EERR aparece como "hotel"
+    @ElementCollection
+    private List<String> accommodation = new ArrayList<>(); // En la EERR aparece como "hotel"
 
     @ElementCollection
-    private String transportation;
+    private List<String> transportation = new ArrayList<>();
 
-    //@ElementCollection
-    //private String activities; // Los planes específicos no tienen actividades?
+    @ElementCollection
+    private List<String> activities = new ArrayList<>();
 
-    //@Column(nullable = false)
-    //private double price; // Los planes específicos no tienen precio?
+    @Column(nullable = false)
+    private double price; 
+
+     // Relación con plantilla (si se creó desde una)
+    @ManyToOne
+    private Plantilla plantillaBase;
+
+    // Relación con paquete (si se creó desde un paquete base)
+    @ManyToOne
+    private Paquete paqueteBase;
+
+    /*
+    REGLAS DE NEGOCIO A APLICAR
+    Si se usa plantillaBase, se permite modificar cualquier campo.
+
+    Si se usa paqueteBase, se pueden añadir extras, pero no modificar los campos del paquete original.
+
+    Los campos plantillaBase y paqueteBase no deben estar ambos a la vez (puedes validarlo a nivel de lógica o servicio).
+    */
 
     public Plan() {
     }
 
-    public Plan(String name, String description, String destination, LocalDate startDate, LocalDate endDate,
-            String accommodation, String transportation, String activities, double price) {
+    public Plan(String name, String description, List<String> destination, LocalDate startDate, LocalDate endDate,
+            List<String> accommodation, List<String> transportation, List<String> activities, double price) {
         this.name = name;
         this.description = description;
         this.destination = destination;
@@ -54,18 +76,12 @@ public class Plan { //Extiende de Plantilla?
         this.endDate = endDate;
         this.accommodation = accommodation;
         this.transportation = transportation;
-        //this.activities = activities;
-        //this.price = price;
+        this.activities = activities;
+        this.price = price;
     }
-
 
     public Long getId() {
         return id;
-    }
-    
-    public void setId(Long id) { // Creo que no es necesario
-        //this.id = id; // No se puede modificar el id, es autogenerado.
-        this.id = id;
     }
     
     public String getName() {
@@ -79,16 +95,12 @@ public class Plan { //Extiende de Plantilla?
     public String getDescription() {
         return description;
     }
-    
-    public void setDescription(String description) {
-        this.description = description;
-    }
-    
-    public String getDestination() {
+
+    public List<String> getDestination() {
         return destination;
     }
-    
-    public void setDestination(String destination) {
+
+    public void setDestination(List<String> destination) {
         this.destination = destination;
     }
     
@@ -108,20 +120,74 @@ public class Plan { //Extiende de Plantilla?
         this.endDate = endDate;
     }
     
-    public String getAccommodation() {
+    public List<String> getAccommodation() {
         return accommodation;
     }
     
-    public void setAccommodation(String accommodation) {
+    public void setAccommodation(List<String> accommodation) {
         this.accommodation = accommodation;
     }
     
-    public String getTransportation() {
+   public List<String> getTransportation() {
         return transportation;
     }
-    
-    public void setTransportation(String transportation) {
+
+    public void setTransportation(List<String> transportation) {
         this.transportation = transportation;
+    }
+
+    public List<String> getActivities() {
+        return activities;
+    }
+
+    public void setActivities(List<String> activities) {
+        this.activities = activities;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public Plantilla getPlantillaBase() {
+        return plantillaBase;
+    }
+
+    public void setPlantillaBase(Plantilla plantillaBase) {
+        this.plantillaBase = plantillaBase;
+    }
+
+    // Funciones para añadir elementos "extras" a los paquetes y plantillas creados.
+
+    public void addDestination(String destination) {
+        if (destination == null || destination.isEmpty()) {
+            throw new IllegalArgumentException("Destination cannot be null or empty.");
+        }
+        this.destination.add(destination);
+    }
+
+    public void addAccommodation(String accommodation) {
+        if (accommodation == null || accommodation.isEmpty()) {
+            throw new IllegalArgumentException("Accommodation cannot be null or empty.");
+        }
+        this.accommodation.add(accommodation);
+    }
+
+    public void addTransportation(String transport) {
+        if (transport == null || transport.isEmpty()) {
+            throw new IllegalArgumentException("Transportation cannot be null or empty.");
+        }
+        this.transportation.add(transport);
+    }
+
+    public void addActivity(String activity) {
+        if (activity == null || activity.isEmpty()) {
+            throw new IllegalArgumentException("Activity cannot be null or empty.");
+        }
+        this.activities.add(activity);
     }
 
 }
