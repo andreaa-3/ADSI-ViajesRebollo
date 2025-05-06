@@ -1,27 +1,71 @@
 package org.irlab.model.entities;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
-public class Paquete extends Plantilla {
-    private String name;
-    private String description;
-    private String destination;
-    private String accommodation;
-    private List<String> transportation;
-    private List<String> activities;
-    private Date begin;
-    private Date end;
-    private Long people;
-    private Long prize;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 
-    public Paquete (String name, String description, String destination, String accommodation, List<String> transportation, List<String> activities, Date begin, Date end, Long people, Long prize) {
-        super(name, description, destination, accommodation, transportation, activities);
-        this.begin = begin;
-        this.end = end;
-        this.people = people;
-        this.prize = prize;
+
+@Entity
+public class Paquete extends Plantilla { // Extiende de Plantilla? 
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(unique = true, nullable = false)
+    private String name;
+
+    @Column(nullable = false)
+    private String description;
+
+    @Column(nullable = false)
+    private String destination;
+
+    @Column(nullable = false)
+    private LocalDate starDate;
+
+    @Column(nullable = false)
+    private LocalDate endDate;
+
+    @Column(nullable = false)
+    private int requiredPeople;
+
+    @Column(nullable = false) // Puede haber un viaje sin alojamiento?
+    private String accommodation;
+
+    @ElementCollection
+    private List<String> transportation;
+
+    @ElementCollection
+    private List<String> activities;
+
+    @Column(nullable = false)
+    private double price;
+
+    public Paquete() {}
+
+    public Paquete(String name, String description, String destination,
+                         LocalDate startDate, LocalDate endDate, int requiredPeople,
+                         String accomodation, List<String> transportation, List<String> activities, double price) {
+        this.name = name;
+        this.description = description;
+        this.destination = destination;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.requiredPeople = requiredPeople;
+        this.lodging = lodging;
+        this.transports = transports;
+        this.activities = activities;
+        this.price = price;
     }
+
 
     public Date getBegin() {
         return begin;
