@@ -91,6 +91,11 @@ public class Plan { //Extiende de Plantilla y de Paquete?
     public void setName(String name) {
         this.name = name;
     }
+
+    public void setDescription(String description) {
+            this.description = description;
+    }
+
     
     public String getDescription() {
         return description;
@@ -158,6 +163,14 @@ public class Plan { //Extiende de Plantilla y de Paquete?
 
     public void setPlantillaBase(Plantilla plantillaBase) {
         this.plantillaBase = plantillaBase;
+    }
+
+    public Paquete getPaqueteBase() {
+        return paqueteBase;
+    }
+
+    public void setPaqueteBase(Paquete paqueteBase) {
+        this.paqueteBase = paqueteBase;
     }
 
     // Funciones para añadir elementos "extras" a los paquetes y plantillas creados.

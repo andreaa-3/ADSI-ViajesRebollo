@@ -29,7 +29,7 @@ public class Paquete {
     private String description;
 
     @ElementCollection
-    private List<String> destination;
+    private List<String> destination = new ArrayList<>();
 
     @Column(nullable = false)
     private LocalDate startDate;

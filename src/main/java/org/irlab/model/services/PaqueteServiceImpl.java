@@ -9,7 +9,6 @@ import org.irlab.model.entities.Paquete;
 import org.irlab.model.exceptions.PaqueteNotFoundException;
 import org.irlab.model.exceptions.PaqueteAlreadyExistsException;
 
-import jakarta.persistence.EntityManager;
 
 /**
  * Implementation of the PaqueteService interface.
