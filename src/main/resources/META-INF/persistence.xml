@@ -7,6 +7,9 @@
   <persistence-unit name="example-jpa-app" transaction-type="RESOURCE_LOCAL">
     <class>org.irlab.model.entities.User</class>
     <class>org.irlab.model.entities.Role</class>
+    <class>org.irlab.model.entities.Paquete</class>
+    <class>org.irlab.model.entities.Plantilla</class>
+    <class>org.irlab.model.entities.Plan</class>
     <!-- Técnicamente debería escanear el proyecto y detectar automáticamente las clases, pero por si acaso especificarlas aquí. -->
     <!-- <exclude-unlisted-classes>false</exclude-unlisted-classes> -->
     <properties>
