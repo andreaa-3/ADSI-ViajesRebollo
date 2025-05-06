@@ -2,21 +2,60 @@ package org.irlab.model.entities;
 
 import java.util.List;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+
+@Entity
 public class Plantilla {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id; // Es la clave primaria (es autogenerado).
+
+     @Column(unique = true, nullable = false)
     public String name;
+
+    @Column(nullable = false)
     public String description;
+
+    @Column(nullable = false)
     public String destination;
+
+    @Column(nullable = false)
     public String accommodation;
+
+    @ElementCollection
     public List<String> transportation;
+
+    @ElementCollection
     public List<String> activities;
 
-    public Plantilla(String name, String description, String destination, String accommodation, List<String> transportation, List<String> activities) {
+
+    public Plantilla() {
+    }
+
+    public Plantilla(String name, String description, String destination, 
+            String accommodation, List<String> transportation, List<String> activities) {
         this.name = name;
         this.description = description;
         this.destination = destination;
         this.accommodation = accommodation;
         this.transportation = transportation;
         this.activities = activities;
+    }
+
+
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) { // Creo que no es necesario
+        this.id = id; // No se puede modificar el id, es autogenerado.
     }
 
     public String getName() {
