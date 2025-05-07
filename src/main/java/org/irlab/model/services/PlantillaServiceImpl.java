@@ -14,7 +14,7 @@ import org.irlab.model.exceptions.PlantillaNotFoundException;
  */
 public class PlantillaServiceImpl implements PlantillaService {
 
-    PlantillaServiceImpl() {
+    public PlantillaServiceImpl() {
     }
 
     @Override

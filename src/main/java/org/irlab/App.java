@@ -1,189 +1,231 @@
-/**
- * Copyright 2022-2025 Information Retrieval Lab
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package org.irlab;
 
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.Scanner;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nonnull;
-
 import org.irlab.common.AppEntityManagerFactory;
-import org.irlab.model.exceptions.RoleNotFoundException;
-import org.irlab.model.exceptions.UserAlreadyExistsException;
-import org.irlab.model.exceptions.UserNotFoundException;
-import org.irlab.model.services.RoleService;
-import org.irlab.model.services.RoleServiceImpl;
-import org.irlab.model.services.UserService;
-import org.irlab.model.services.UserServiceImpl;
+import org.irlab.model.entities.Paquete;
+import org.irlab.model.entities.Plantilla;
+import org.irlab.model.entities.Plan;
+import org.irlab.model.exceptions.*;
+import org.irlab.model.services.*;
 
 import jakarta.persistence.EntityManager;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Scanner;
 
 public class App {
 
     private enum Command {
-        GREET_USER, CHANGE_GREETING, CREATE_USER, EXIT
+        CREATE_PAQUETE, CREATE_PLANTILLA, CREATE_PLAN, EXIT
     }
 
-    private static final int CORRECT_SHUTDOWN = 50000;
-
-    private static UserService userService = null;
-
-    private static RoleService roleService = null;
-
-    private static Scanner scanner = null;
+    private static PaqueteService paqueteService = new PaqueteServiceImpl();
+    private static PlantillaService plantillaService = new PlantillaServiceImpl();
+    private static PlanService planService = new PlanServiceImpl();
+    private static Scanner scanner = new Scanner(System.in);
 
     private static void init() {
-        try (EntityManager em = AppEntityManagerFactory.getInstance().createEntityManager()) {}
-        try {
-            userService = new UserServiceImpl();
-        } catch (RoleNotFoundException e) {
-            System.out.println(
-                    """
-                            Could not find the default role in the database.
-
-                            This usually means the database has not been populated. The schema has now been created if
-                            it didn't exists already. You can now populate the database with:
-
-                              mvn sql:execute
-
-                            Have a good day!
-                            """);
-            System.exit(1);
+        try (EntityManager em = AppEntityManagerFactory.getInstance().createEntityManager()) {
+            // Inicialización de la base de datos si es necesario
         }
-        roleService = new RoleServiceImpl();
     }
 
-    private static void shutdown() throws SQLException {
+    private static void shutdown() {
         AppEntityManagerFactory.close();
-
-        try {
-            DriverManager.getConnection("jdbc:derby:;shutdown=true");
-        } catch (SQLException e) {
-            if (e.getErrorCode() != CORRECT_SHUTDOWN) {
-                throw e;
-            }
-        }
+        scanner.close();
     }
 
     private static Command getCommand() {
         System.out.println("Choose an option:");
-        System.out.println("  1) Greet user");
-        System.out.println("  2) Change user greeting");
-        System.out.println("  3) Add a new user");
-        System.out.println();
+        System.out.println("  1) Create Paquete");
+        System.out.println("  2) Create Plantilla");
+        System.out.println("  3) Create Plan Específico");
         System.out.println("  q) Exit");
-        System.out.println();
         while (true) {
             System.out.print("Option: ");
             String input = scanner.nextLine();
-            if (input.length() == 0) {
-                System.out.println("An option needs to be introduced");
-            } else if (input.length() > 1) {
-                System.err.println(input + " is not a valid option");
-            } else {
-                switch (input.charAt(0)) {
-                case '1':
-                    return Command.GREET_USER;
-                case '2':
-                    return Command.CHANGE_GREETING;
-                case '3':
-                    return Command.CREATE_USER;
-                case 'q':
+            switch (input) {
+                case "1":
+                    return Command.CREATE_PAQUETE;
+                case "2":
+                    return Command.CREATE_PLANTILLA;
+                case "3":
+                    return Command.CREATE_PLAN;
+                case "q":
                     return Command.EXIT;
                 default:
-                    System.out.println(input + " is not a valid option");
-                }
+                    System.out.println("Invalid option. Try again.");
             }
         }
     }
 
-    private static @Nonnull String readInput(String message, String errorMessage) {
-        String result = null;
-        while (result == null) {
-            System.out.print(message);
-            String input = scanner.nextLine();
-            if (input.length() == 0) {
-                System.out.println(errorMessage);
-            } else {
-                result = input;
-            }
-        }
-        return result;
-    }
+    private static void createPaquete() {
+        System.out.print("Enter Paquete name: ");
+        String name = scanner.nextLine();
+        System.out.print("Enter Paquete description: ");
+        String description = scanner.nextLine();
+        System.out.print("Enter Paquete destinations (comma-separated): ");
+        String destinations = scanner.nextLine();
+        System.out.print("Enter Paquete activities (comma-separated): ");
+        String activities = scanner.nextLine();
+        System.out.print("Enter Paquete start date (yyyy-mm-dd): ");
+        LocalDate startDate = LocalDate.parse(scanner.nextLine());
+        System.out.print("Enter Paquete end date (yyyy-mm-dd): ");
+        LocalDate endDate = LocalDate.parse(scanner.nextLine());
+        System.out.print("Enter Paquete price: ");
+        double price = Double.parseDouble(scanner.nextLine());
 
-    private static void greetUser() {
-        String userName = readInput("User name: ", "You must supply a user name");
-        String greetingMessage = userService.greet(userName);
-        System.out.println(greetingMessage);
-    }
+        Paquete paquete = new Paquete();
+        paquete.setName(name);
+        paquete.setDescription(description);
+        paquete.setDestination(List.of(destinations.split(",")));
+        paquete.setActivities(List.of(activities.split(",")));
+        paquete.setStartDate(startDate);
+        paquete.setEndDate(endDate);
+        paquete.setPrice(price);
 
-    private static void changeGreeting() {
-        String userName = readInput("User name: ", "You must supply a user name");
-        String newGreeting = readInput("Greeting message: ",
-                "You must supply a new greeting message");
         try {
-            userService.setUserGreeting(userName, newGreeting);
-            System.out.println("User greeting changed");
-        } catch (UserNotFoundException e) {
-            System.out.println(
-                    String.format("Greeting could not be changed, due to the following error:\n%s",
-                            e.getMessage()));
+            paqueteService.createPaquete(paquete);
+            System.out.println("Paquete created successfully.");
+        } catch (PaqueteAlreadyExistsException e) {
+            System.out.println("Error: A Paquete with this name already exists.");
         }
-
     }
 
-    private static @Nonnull String askForRole() {
-        String roleList = roleService.getAvailableRoleNames().stream()
-                .map(name -> "  - " + name + "\n").collect(Collectors.joining(""));
-        String prompt = "Select a role for the user. Available roles are:\n" + roleList
-                + "User role: ";
-        return readInput(prompt, "You must supply a role name");
-    }
+    private static void createPlantilla() {
+        System.out.print("Enter Plantilla name: ");
+        String name = scanner.nextLine();
+        System.out.print("Enter Plantilla description: ");
+        String description = scanner.nextLine();
+        System.out.print("Enter Plantilla destinations (comma-separated): ");
+        String destinations = scanner.nextLine();
+        System.out.print("Enter Plantilla accommodations (comma-separated): ");
+        String accommodations = scanner.nextLine();
 
-    private static void createUser() {
-        String userName = readInput("User name: ", "You must supply a user name");
-        String roleName = askForRole();
+        Plantilla plantilla = new Plantilla();
+        plantilla.setName(name);
+        plantilla.setDescription(description);
+        plantilla.setDestination(destinations);
+        plantilla.setAccommodation(accommodations);
+
         try {
-            userService.createUser(userName, roleName);
-            System.out.println("User created");
-        } catch (UserAlreadyExistsException e) {
-            System.out.println("User not created: a user with that name already exists.");
-        } catch (RoleNotFoundException e) {
-            System.out.println("User not created: invalid role");
+            plantillaService.createPlantilla(plantilla);
+            System.out.println("Plantilla created successfully.");
+        } catch (PlantillaAlreadyExistsException e) {
+            System.out.println("Error: A Plantilla with this name already exists.");
         }
     }
 
-    public static void main(String[] args) throws SQLException {
+    private static void createPlan() {
+        System.out.println("Do you want to base the Plan on:");
+        System.out.println("  1) A Plantilla");
+        System.out.println("  2) A Paquete");
+        System.out.print("Option: ");
+        String option = scanner.nextLine();
+
+        if ("1".equals(option)) {
+            createPlanFromPlantilla();
+        } else if ("2".equals(option)) {
+            createPlanFromPaquete();
+        } else {
+            System.out.println("Invalid option.");
+        }
+    }
+
+    private static void createPlanFromPlantilla() {
+        List<Plantilla> plantillas = plantillaService.getAllPlantillas();
+        if (plantillas.isEmpty()) {
+            System.out.println("No Plantillas available to base the Plan on.");
+            return;
+        }
+
+        System.out.println("Available Plantillas:");
+        for (int i = 0; i < plantillas.size(); i++) {
+            System.out.println((i + 1) + ") " + plantillas.get(i).getName());
+        }
+
+        System.out.print("Choose a Plantilla: ");
+        int choice = Integer.parseInt(scanner.nextLine()) - 1;
+        if (choice < 0 || choice >= plantillas.size()) {
+            System.out.println("Invalid choice.");
+            return;
+        }
+
+        Plantilla basePlantilla = plantillas.get(choice);
+        Plan plan = new Plan();
+        plan.setPlantillaBase(basePlantilla);
+
+        System.out.print("Enter Plan name: ");
+        plan.setName(scanner.nextLine());
+        System.out.print("Enter Plan description: ");
+        plan.setDescription(scanner.nextLine());
+        System.out.print("Add extra destinations (comma-separated): ");
+        String destinations = scanner.nextLine();
+        for (String destination : destinations.split(",")) {
+            plan.addDestination(destination.trim());
+        }
+
+        try {
+            planService.createPlan(plan);
+            System.out.println("Plan created successfully.");
+        } catch (PlanAlreadyExistsException | PlanInvalidInheritanceException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+
+    private static void createPlanFromPaquete() {
+        List<Paquete> paquetes = paqueteService.getAllPaquetes();
+        if (paquetes.isEmpty()) {
+            System.out.println("No Paquetes available to base the Plan on.");
+            return;
+        }
+
+        System.out.println("Available Paquetes:");
+        for (int i = 0; i < paquetes.size(); i++) {
+            System.out.println((i + 1) + ") " + paquetes.get(i).getName());
+        }
+
+        System.out.print("Choose a Paquete: ");
+        int choice = Integer.parseInt(scanner.nextLine()) - 1;
+        if (choice < 0 || choice >= paquetes.size()) {
+            System.out.println("Invalid choice.");
+            return;
+        }
+
+        Paquete basePaquete = paquetes.get(choice);
+        Plan plan = new Plan();
+        plan.setPaqueteBase(basePaquete);
+
+        System.out.print("Enter Plan name: ");
+        plan.setName(scanner.nextLine());
+        System.out.print("Enter Plan description: ");
+        plan.setDescription(scanner.nextLine());
+        System.out.print("Add extra destinations (comma-separated): ");
+        String destinations = scanner.nextLine();
+        for (String destination : destinations.split(",")) {
+            plan.addDestination(destination.trim());
+        }
+
+        try {
+            planService.createPlan(plan);
+            System.out.println("Plan created successfully.");
+        } catch (PlanAlreadyExistsException | PlanInvalidInheritanceException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+
+    public static void main(String[] args) {
         init();
         boolean exit = false;
-        scanner = new Scanner(System.in);
         while (!exit) {
-            System.out.println();
             Command command = getCommand();
             switch (command) {
-            case GREET_USER -> greetUser();
-            case CHANGE_GREETING -> changeGreeting();
-            case CREATE_USER -> createUser();
-            case EXIT -> exit = true;
+                case CREATE_PAQUETE -> createPaquete();
+                case CREATE_PLANTILLA -> createPlantilla();
+                case CREATE_PLAN -> createPlan();
+                case EXIT -> exit = true;
             }
         }
-
         shutdown();
     }
 }
