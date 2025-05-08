@@ -3,7 +3,6 @@ package org.irlab.model.entities;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
@@ -27,9 +26,9 @@ public class Paquete {
 
     @Column(nullable = false)
     private String description;
-
+    
     @ElementCollection
-    private List<String> destination = new ArrayList<>();
+    private List<String> destination;
 
     @Column(nullable = false)
     private LocalDate startDate;
@@ -41,16 +40,16 @@ public class Paquete {
     private int requiredPeople;
 
     @ElementCollection
-    private List<String> accommodation = new ArrayList<>();
+    private List<String> accommodation;
 
     @ElementCollection
-    private List<String> transportation = new ArrayList<>();
+    private List<String> transportation;
 
     @ElementCollection
-    private List<String> activities = new ArrayList<>();
+    private List<String> activities;
 
     @Column(nullable = false)
-    private double price;
+    private double price = -1;
 
     public Paquete() {}
 
@@ -153,5 +152,20 @@ public class Paquete {
         this.price = price;
     }
 
-   
+    @Override
+    public String toString() {
+        return "Paquete{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", destination=" + (destination != null ? new ArrayList<>(destination) : "[]") +
+                ", startDate=" + startDate +
+                ", endDate=" + endDate +
+                ", requiredPeople=" + requiredPeople +
+                ", accommodation=" + (accommodation != null ? new ArrayList<>(accommodation) : "[]") +
+                ", transportation=" + (transportation != null ? new ArrayList<>(transportation) : "[]") +
+                ", activities=" + (activities != null ? new ArrayList<>(activities) : "[]") +
+                ", price=" + price +
+                '}';
+    }    
 }

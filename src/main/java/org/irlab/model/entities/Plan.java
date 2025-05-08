@@ -36,7 +36,7 @@ public class Plan { //Extiende de Plantilla y de Paquete?
     private LocalDate endDate;
 
     @ElementCollection
-    private List<String> accommodation = new ArrayList<>(); // En la EERR aparece como "hotel"
+    private List<String> accommodation = new ArrayList<>();
 
     @ElementCollection
     private List<String> transportation = new ArrayList<>();
@@ -45,7 +45,7 @@ public class Plan { //Extiende de Plantilla y de Paquete?
     private List<String> activities = new ArrayList<>();
 
     @Column(nullable = false)
-    private double price; 
+    private double price = -1; 
 
      // Relación con plantilla (si se creó desde una)
     @ManyToOne
@@ -95,7 +95,6 @@ public class Plan { //Extiende de Plantilla y de Paquete?
     public void setDescription(String description) {
             this.description = description;
     }
-
     
     public String getDescription() {
         return description;
@@ -128,12 +127,12 @@ public class Plan { //Extiende de Plantilla y de Paquete?
     public List<String> getAccommodation() {
         return accommodation;
     }
-    
+
     public void setAccommodation(List<String> accommodation) {
-        this.accommodation = accommodation;
-    }
+        this.accommodation = accommodation != null ? new ArrayList<>(accommodation) : new ArrayList<>();
+    } 
     
-   public List<String> getTransportation() {
+    public List<String> getTransportation() {
         return transportation;
     }
 
@@ -173,34 +172,74 @@ public class Plan { //Extiende de Plantilla y de Paquete?
         this.paqueteBase = paqueteBase;
     }
 
-    // Funciones para añadir elementos "extras" a los paquetes y plantillas creados.
+    // Funciones para añadir elementos "extras" a los de los paquetes y plantillas a partir de los que se crea la plantilla.
 
     public void addDestination(String destination) {
         if (destination == null || destination.isEmpty()) {
             throw new IllegalArgumentException("Destination cannot be null or empty.");
         }
-        this.destination.add(destination);
+        if (!this.destination.contains(destination)) this.destination.add(destination);
     }
 
     public void addAccommodation(String accommodation) {
         if (accommodation == null || accommodation.isEmpty()) {
             throw new IllegalArgumentException("Accommodation cannot be null or empty.");
         }
-        this.accommodation.add(accommodation);
+        if (!this.accommodation.contains(accommodation)) this.accommodation.add(accommodation);
     }
 
     public void addTransportation(String transport) {
         if (transport == null || transport.isEmpty()) {
             throw new IllegalArgumentException("Transportation cannot be null or empty.");
         }
-        this.transportation.add(transport);
+        if (!this.transportation.contains(transport)) this.transportation.add(transport);
     }
 
     public void addActivity(String activity) {
         if (activity == null || activity.isEmpty()) {
             throw new IllegalArgumentException("Activity cannot be null or empty.");
         }
-        this.activities.add(activity);
+        if (!this.activities.contains(activity)) this.activities.add(activity);
     }
 
+    // Funciones para eliminar elementos de un plan creado a partir de una plantilla.
+
+    public void deleteDestination(String destination) {
+        if (destination == null || destination.isEmpty()) {
+            throw new IllegalArgumentException("Destination cannot be null or empty.");
+        }
+        if (this.destination == null) return;
+        String target = destination.trim().toLowerCase();
+        this.destination.removeIf(a -> a.trim().toLowerCase().equals(target));
+    }
+
+    public void deleteAccommodation(String accommodation) {
+        if (accommodation == null || accommodation.isEmpty()) {
+            throw new IllegalArgumentException("Accommodation cannot be null or empty.");
+        }
+        if (this.accommodation == null) return;
+    
+        String target = accommodation.trim().toLowerCase();
+        this.accommodation.removeIf(a -> a.trim().toLowerCase().equals(target));
+    }
+
+    public void deleteTransportation(String transport) {
+        if (transport == null || transport.isEmpty()) {
+            throw new IllegalArgumentException("Transportation cannot be null or empty.");
+        }
+
+        if (this.transportation == null) return;
+        String target = transport.trim().toLowerCase();
+        this.transportation.removeIf(a -> a.trim().toLowerCase().equals(target));
+    }
+
+    public void deleteActivity(String activity) {
+        if (activity == null || activity.isEmpty()) {
+            throw new IllegalArgumentException("Activity cannot be null or empty.");
+        }
+
+        if (this.activities == null) return;
+        String target = activity.trim().toLowerCase();
+        this.activities.removeIf(a -> a.trim().toLowerCase().equals(target));
+    }
 }

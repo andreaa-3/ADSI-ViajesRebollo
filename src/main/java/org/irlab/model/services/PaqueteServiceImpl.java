@@ -1,6 +1,7 @@
 package org.irlab.model.services;
 
 import javax.annotation.Nonnull;
+
 import java.util.List;
 
 import org.irlab.common.AppEntityManagerFactory;
@@ -17,7 +18,7 @@ public class PaqueteServiceImpl implements PaqueteService {
 
     public PaqueteServiceImpl() {
     }
-
+    
     @Override
     public void createPaquete(@Nonnull Paquete paquete) throws PaqueteAlreadyExistsException {
         try (var em = AppEntityManagerFactory.getInstance().createEntityManager()) {

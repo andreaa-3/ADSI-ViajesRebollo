@@ -2,7 +2,10 @@ package org.irlab.model.services;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+
+import org.irlab.model.entities.Paquete;
 import org.irlab.model.entities.Plan;
+import org.irlab.model.entities.Plantilla;
 import org.irlab.model.exceptions.PlanNotFoundException;
 import org.irlab.model.exceptions.PlanAlreadyExistsException;
 import org.irlab.model.exceptions.PlanInvalidInheritanceException;
@@ -11,6 +14,21 @@ import org.irlab.model.exceptions.PlanInvalidInheritanceException;
  * The plan service facade
  */
 public interface PlanService {
+    /**
+     * Set atributes of plan from a plantilla
+     * 
+     * @param plan the plan to copy to 
+     * @param plantillaBase the plantilla to copy from
+     */
+    Plan applyBasePlantilla(Plan plan, Plantilla plantillaBase);
+
+    /**
+     * Set atributes of plan from a paquete
+     * 
+     * @param plan the plan to copy to  
+     * @param paqueteBase the paquete to copy from
+     */
+    Plan applyBasePaquete(Plan plan, Paquete paqueteBase);
 
     /**
      * Create a new plan

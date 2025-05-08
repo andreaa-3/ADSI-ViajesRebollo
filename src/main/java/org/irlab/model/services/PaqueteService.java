@@ -10,7 +10,6 @@ import org.irlab.model.exceptions.PaqueteAlreadyExistsException;
  * The paquete service facade
  */
 public interface PaqueteService {
-
     /**
      * Create a new paquete
      *

@@ -24,18 +24,16 @@ public class Plantilla {
     private String description;
 
     @Column(nullable = false)
-    private String destination;// A diferencia del paquete, por defecto
-                        // cada plantilla solo tienen un destino.
+    private String destination;// A diferencia del paquete, por defecto cada plantilla solo tienen un destino.
 
     @Column(nullable = false)
-    private String accommodation; // A diferencia del paquete, por defecto
-                        // cada plantilla solo tienen un alojamiento.
+    private String accommodation; // A diferencia del paquete, por defecto cada plantilla solo tienen un alojamiento.
 
     @ElementCollection
-    private List<String> transportation = new ArrayList<>();
+    private List<String> transportation;
 
     @ElementCollection
-    private List<String> activities = new ArrayList<>();
+    private List<String> activities;
 
 
     public Plantilla() {
@@ -104,4 +102,16 @@ public class Plantilla {
     public void setActivities(List<String> activities) {
         this.activities = activities;
     }
+
+    public String toString() {
+        return "Plantilla{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", destination=" + destination +
+                ", accommodation=" + accommodation +
+                ", transportation=" + (transportation != null ? new ArrayList<>(transportation) : "[]") +
+                ", activities=" + (activities != null ? new ArrayList<>(activities) : "[]") +
+                '}';
+    }    
 }
