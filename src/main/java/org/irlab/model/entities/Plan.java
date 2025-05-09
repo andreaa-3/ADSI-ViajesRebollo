@@ -129,7 +129,7 @@ public class Plan { //Extiende de Plantilla y de Paquete?
     }
 
     public void setAccommodation(List<String> accommodation) {
-        this.accommodation = accommodation != null ? new ArrayList<>(accommodation) : new ArrayList<>();
+        this.accommodation = accommodation;
     } 
     
     public List<String> getTransportation() {
@@ -172,74 +172,81 @@ public class Plan { //Extiende de Plantilla y de Paquete?
         this.paqueteBase = paqueteBase;
     }
 
-    // Funciones para añadir elementos "extras" a los de los paquetes y plantillas a partir de los que se crea la plantilla.
+    // Functions to add elements to an array.
+    
+    public List<String> addList (String item, List<String> list, String fieldName) {
+        if (item == null || item.isEmpty()) {
+            throw new IllegalArgumentException(fieldName  + " cannot be null or empty.");
+        }
+        if (list == null) list = new ArrayList<>();
+        if (!list.contains(item)) list.add(item);
+        return list;
+    }
 
     public void addDestination(String destination) {
-        if (destination == null || destination.isEmpty()) {
-            throw new IllegalArgumentException("Destination cannot be null or empty.");
-        }
-        if (!this.destination.contains(destination)) this.destination.add(destination);
+        List<String> l = addList(destination, this.destination, "Destionation");
+        if (l != null) setDestination(l);
     }
 
     public void addAccommodation(String accommodation) {
-        if (accommodation == null || accommodation.isEmpty()) {
-            throw new IllegalArgumentException("Accommodation cannot be null or empty.");
-        }
-        if (!this.accommodation.contains(accommodation)) this.accommodation.add(accommodation);
+        List<String> l = addList(accommodation, this.accommodation, "Accommodation");
+        if (l != null) setAccommodation(l);
     }
 
     public void addTransportation(String transport) {
-        if (transport == null || transport.isEmpty()) {
-            throw new IllegalArgumentException("Transportation cannot be null or empty.");
-        }
-        if (!this.transportation.contains(transport)) this.transportation.add(transport);
+        List<String> l = addList(transport, this.accommodation, "Transportation");
+        if (l != null) setTransportation(l);
     }
 
     public void addActivity(String activity) {
-        if (activity == null || activity.isEmpty()) {
-            throw new IllegalArgumentException("Activity cannot be null or empty.");
-        }
-        if (!this.activities.contains(activity)) this.activities.add(activity);
+        List<String> l = addList(activity, this.activities, "Activity");
+        if (l != null) setActivities(l);
+    }
+    
+    // Functions to delete elements from an array.
+
+    public List<String> deleteList(String item, List<String> list, String fieldName) {
+        if (item == null || item.isEmpty()) throw new IllegalArgumentException(fieldName + " cannot be null or empty.");
+
+        if (list == null) return null;
+        
+        String target = item.trim().toLowerCase();
+        list.removeIf(a -> a.trim().toLowerCase().equals(target));
+
+        if (list.isEmpty()) return null;
+        return list;
     }
 
-    // Funciones para eliminar elementos de un plan creado a partir de una plantilla.
 
-    public void deleteDestination(String destination) {
-        if (destination == null || destination.isEmpty()) {
-            throw new IllegalArgumentException("Destination cannot be null or empty.");
-        }
-        if (this.destination == null) return;
-        String target = destination.trim().toLowerCase();
-        this.destination.removeIf(a -> a.trim().toLowerCase().equals(target));
+    public void deleteDestination(String dest) {
+        setDestination(deleteList(dest, this.destination, "Destination"));
     }
 
     public void deleteAccommodation(String accommodation) {
-        if (accommodation == null || accommodation.isEmpty()) {
-            throw new IllegalArgumentException("Accommodation cannot be null or empty.");
-        }
-        if (this.accommodation == null) return;
-    
-        String target = accommodation.trim().toLowerCase();
-        this.accommodation.removeIf(a -> a.trim().toLowerCase().equals(target));
+        setAccommodation(deleteList(accommodation, this.accommodation, "Accommodation"));
     }
 
     public void deleteTransportation(String transport) {
-        if (transport == null || transport.isEmpty()) {
-            throw new IllegalArgumentException("Transportation cannot be null or empty.");
-        }
-
-        if (this.transportation == null) return;
-        String target = transport.trim().toLowerCase();
-        this.transportation.removeIf(a -> a.trim().toLowerCase().equals(target));
+        setTransportation(deleteList(transport, this.transportation, "Transportation"));
     }
 
     public void deleteActivity(String activity) {
-        if (activity == null || activity.isEmpty()) {
-            throw new IllegalArgumentException("Activity cannot be null or empty.");
-        }
-
-        if (this.activities == null) return;
-        String target = activity.trim().toLowerCase();
-        this.activities.removeIf(a -> a.trim().toLowerCase().equals(target));
+        setActivities(deleteList(activity, this.activities, "Activity"));
     }
+
+    @Override
+    public String toString() {
+        return "Plan{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", destination=" + (destination != null ? new ArrayList<>(destination) : "[]") +
+                ", startDate=" + startDate +
+                ", endDate=" + endDate +
+                ", accommodation=" + (accommodation != null ? new ArrayList<>(accommodation) : "[]") +
+                ", transportation=" + (transportation != null ? new ArrayList<>(transportation) : "[]") +
+                ", activities=" + (activities != null ? new ArrayList<>(activities) : "[]") +
+                ", price=" + price +
+                '}';
+    } 
 }

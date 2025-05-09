@@ -38,7 +38,7 @@ public class App {
 
     private static void init() {
         try (EntityManager em = AppEntityManagerFactory.getInstance().createEntityManager()) {
-            // Inicialización de la base de datos si es necesario
+            // Initialize the database if necessary
         }
     }
 
@@ -68,23 +68,50 @@ public class App {
 
 
     /* DATA FUNCTIONS */
+    /**
+     * Asks the user whether they want to save a given object.
+     *
+     * @param className the name of the class or object to be saved (e.g., "Plan", "Package")
+     * @return the user's input as a string, typically "1" for Yes or "2" for No
+     */
     private static String askSave (String className) {
         System.out.println("Do you want to save the " + className + ":");
         System.out.println("  1) Yes");
-        System.out.println("  2) No");
+        System.out.println("  Else) No");
         System.out.print("Option: ");
         return scanner.nextLine();
     }
 
+    /**
+     * Prompts the user to input a single-line string for a given class and field.
+     *
+     * @param className the name of the class (e.g., "Plan", "Package")
+     * @param fieldName the name of the field to be entered
+     * @return the trimmed input string
+     */
     private static String introduceString (String className, String fieldName) {
         System.out.print("Enter " + className + " " + fieldName + ": ");
         return scanner.nextLine().trim();
     }
     
+    /**
+     * Validates that a string is not empty.
+     *
+     * @param input the string to validate
+     * @return true if the input is not empty; false otherwise
+     */
     private static boolean validateMandatoryString (String input) {
         return !input.isEmpty();
     }
 
+    /**
+     * Prompts the user to enter a comma-separated list of values for a given class and field.
+     * Removes duplicates and empty entries, preserving insertion order.
+     *
+     * @param className the name of the class
+     * @param fieldName the name of the field
+     * @return a list of unique, trimmed values, or null if input is empty or only contained empty entries
+     */
     private static List<String> introduceList (String className, String fieldName) {
         System.out.print("Enter " + className + " " + fieldName + " (comma-separated): ");
         String input = scanner.nextLine().trim();
@@ -101,10 +128,24 @@ public class App {
         return new ArrayList<>(cleanedSet);
     }
 
+    /**
+    * Validates that a list is not null.
+    *
+    * @param list the list to validate
+    * @return true if the list is not null; false otherwise
+    */
     private static boolean validateMandatoryList (List<String> list) {
         return list != null;
     }
 
+    /**
+     * Prompts the user to input a date in yyyy-mm-dd format.
+     *
+     * @param className the name of the class
+     * @param fieldName the name of the field
+     * @param extra additional text to display in the prompt
+     * @return the parsed LocalDate or null if the input was invalid
+     */
     private static LocalDate introduceDate (String className, String fieldName, String extra) {
         LocalDate date;
 
@@ -120,15 +161,36 @@ public class App {
         return date;
     }
 
+    /**
+     * Validates that a LocalDate is not null.
+     *
+     * @param date the date to validate
+     * @return true if the date is not null; false otherwise
+     */
     private static boolean validateMandatoryDate (LocalDate date) {
         return date != null;
     }
 
+    /**
+     * Validates that the end date is valid and, if the start date is also valid, that it comes after the start date.
+     *
+     * @param endDate the end date to validate
+     * @param startDate the start date to compare against
+     * @param startDateValidated whether the start date was previously validated
+     * @return true if the end date is valid and (if applicable) after the start date
+     */
     private static boolean validateEndDate (LocalDate endDate, LocalDate startDate, boolean startDateValidated) {
         if (!validateMandatoryDate (endDate)) return false;
-        return (!startDateValidated || endDate.isAfter(startDate)); // Si startDate no es correcta, se devuelve true, si no, se comprueba que sea posterior.
+        return (!startDateValidated || endDate.isAfter(startDate)); // If startDate is not correct, true is returned, if not, it is checked that it is later.
     }
 
+    /**
+     * Prompts the user to input a number for a given class and field.
+     *
+     * @param className the name of the class
+     * @param fieldName the name of the field
+     * @return the parsed number, or -1 if the input was not a valid number
+     */
     private static double introduceNumber (String className, String fieldName) {
         double n;
 
@@ -143,12 +205,25 @@ public class App {
         return n;
     }
 
+    /**
+     * Validates that a number is positive.
+     *
+     * @param n the number to validate
+     * @return true if the number is greater than 0; false otherwise
+     */
     private static boolean validateMandatoryPositiveNumber (double n) {
         return n > 0;
     }
 
     /* PAQUETE FUNCTIONS */
 
+    /**
+     * Fills in the missing fields of a Paquete object by prompting the user.
+     * Only initially missing fields (null or invalid like -1 for price) are requested.
+     *
+     * @param paquete the Paquete object to be completed
+     * @return the updated Paquete with all required fields filled in by the user
+     */
     private static Paquete setPaqueteFieldsByUser (Paquete paquete) {
         if (paquete.getName() == null) paquete.setName(introduceString("Paquete", "name"));
         if (paquete.getDescription() == null) paquete.setDescription(introduceString("Paquete", "description"));
@@ -162,6 +237,14 @@ public class App {
         return paquete;
     }
 
+
+    /**
+     * Attempts to save a Paquete.
+     * If a Paquete with the same name already exists, prompts the user to enter a new name
+     * and retries until the Paquete is successfully saved.
+     *
+     * @param paquete the Paquete to be saved
+     */
     private static void savePaquete(Paquete paquete) {
         while (true) {
             try {
@@ -183,6 +266,11 @@ public class App {
         }
     }
 
+    /**
+     * Main function in the creation of a Paquete.
+     * Prompts for each field, validates required data, and repeats the process
+     * until all mandatory fields are valid. Once validated, attempts to save the Paquete.
+     */
     private static void createPaquete() {
         boolean vName, vDescription, vDestination, vAccommodation, vTransportation, vActivities, vStartDate, vEndDate, vPrice;
         boolean valid;
@@ -193,7 +281,7 @@ public class App {
 
             // Confirmate
             String option = askSave("Paquete");
-            if (option.equals("2")) return;
+            if (!option.equals("1")) return;
 
             // Validate
             vName = validateMandatoryString(paquete.getName());
@@ -228,6 +316,13 @@ public class App {
 
     /* PLANTILLA FUNCTIONS */
 
+    /**
+     * Fills in the missing fields of a Plantilla object by prompting the user.
+     * Only initially missing fields (null) are requested.
+     *
+     * @param plantilla the Plantilla object to be completed
+     * @return the updated Plantilla with all required fields filled in by the user
+     */
     private static Plantilla setPlantillaFieldsByUser (Plantilla plantilla) {
         if (plantilla.getName() == null) plantilla.setName(introduceString("Plantilla", "name"));
         if (plantilla.getDescription() == null) plantilla.setDescription(introduceString("Plantilla", "description"));
@@ -238,6 +333,13 @@ public class App {
         return plantilla;
     }
 
+    /**
+     * Attempts to save a Plantilla.
+     * If a Plantilla with the same name already exists, prompts the user to enter a new name
+     * and retries until the Plantilla is successfully saved.
+     *
+     * @param plantilla the Plantilla to be saved
+     */
     private static void savePlantilla(Plantilla plantilla) {
         while (true) {
             try {
@@ -258,6 +360,11 @@ public class App {
         }
     }    
 
+    /**
+     * Main function in the creation of a Plantilla.
+     * Prompts for each field, validates required data, and repeats the process
+     * until all mandatory fields are valid. Once validated, attempts to save the Plantilla.
+     */
     private static void createPlantilla() {
         boolean vName, vDescription, vDestination, vAccommodation, vTransportation, vActivities;
         boolean valid;
@@ -268,7 +375,7 @@ public class App {
 
             // Confirmate
             String option = askSave("Plantilla");
-            if (option.equals("2")) return;
+            if (!option.equals("1")) return;
 
             // Validate
             vName = validateMandatoryString(plantilla.getName());
@@ -297,6 +404,10 @@ public class App {
 
     /* COMMON PLAN FUNCTIONS */
 
+    /**
+     * Prompts the user to choose how to create a Plan: from a Plantilla or a Paquete.
+     * Calls the corresponding method based on the user's input.
+     */
     private static void createPlan() {
         System.out.println("Do you want to base the Plan on:");
         System.out.println("  1) A Plantilla");
@@ -311,6 +422,15 @@ public class App {
         }
     }
 
+    /**
+     * Displays a numbered list of Paquetes or Plantillas and prompts the user to choose one by number.
+     * If the list is empty or the input is invalid, returns null.
+     *
+     * @param items the list of Paquetes or Plantillas to choose from
+     * @param className the display name of the item type ("Plan" or "Paquete")
+     * @param nameExtractor class of the items of the list (Plan or Paquete)
+     * @return the selected item, or null if the selection is invalid
+     */
     private static <T> T chooseFromList (List<T> items, String className, Function<T, String> nameExtractor) {
         if (items.isEmpty()) {
             System.out.println("No " + className + "s available to base the Plan on.");
@@ -336,10 +456,24 @@ public class App {
         }
     }
 
+    /**
+     * Prints the current contents of a list field.
+     * If the list is null, it prints "none".
+     *
+     * @param fieldName the name of the field being printed (e.g., "destination/s")
+     * @param list      the list of values to display
+     */
     private static void printList (String fieldName, List<String> list) {
-        System.out.println("Current " + fieldName + ": " + (list != null ? String.join(", ", list) : "none")); // Validación por si acaso, aunque siempre debería haber al menos una.
+        System.out.println("Current " + fieldName + ": " + (list != null ? String.join(", ", list) : "none")); // Validation just in case, although there should always be at least one.
     }
 
+    /**
+     * Prompts the user to enter additional values for a list field, comma-separated.
+     * Skips if the input is empty. Adds each unique, trimmed value using the provided add function.
+     *
+     * @param fieldName   the name of the field (e.g., "destination/s")
+     * @param addFunction a Consumer that adds a single value to the list
+     */
     private static void introduceExtraList(String fieldName, Consumer<String> addFunction) {
         System.out.print("Add Plan extra " + fieldName + " (comma-separated) or press Enter to skip: ");
         String list = scanner.nextLine().trim();
@@ -354,6 +488,13 @@ public class App {
         }
     }
     
+    /**
+     * Attempts to save a Plan.
+     * If a Plan with the same name already exists, prompts the user to enter a new name
+     * and retries until the Plan is successfully saved.
+     *
+     * @param plan the Plan to be saved
+     */
     private static void savePlan(Plan plan) {
         while (true) {
             try {
@@ -378,7 +519,13 @@ public class App {
     }  
 
     /* CREATE PLAN FROM PAQUETE FUNCTIONS */
-
+    /**
+     * Complements fields of a Plan created after a Paquete object by prompting the user.
+     * Only list fields are requested to add extra information.
+     *
+     * @param plan the Plan object to be completed
+     * @return the updated Plan with all extra data introduced by the user
+     */
     private static Plan setPlanFromPaqueteFieldsByUser (Plan plan) {
         if (plan.getName() == null) plan.setName(introduceString("Plan", "name"));
         if (plan.getDescription() == null) plan.setDescription(introduceString("Plan", "description"));
@@ -403,6 +550,11 @@ public class App {
         return plan;
     }
 
+    /**
+     * Main function in the creation of a Plan from Paquete.
+     * Prompts for each field, validates required data, and repeats the process
+     * until all mandatory fields are valid. Once validated, attempts to save the Plan.
+     */
     private static void createPlanFromPaquete() {
         boolean vName, vDescription;
         boolean valid;
@@ -418,7 +570,7 @@ public class App {
 
             // Confirmate
             String option = askSave("Plan");
-            if (option.equals("2")) return;
+            if (!option.equals("1")) return;
 
             // Validate (The only data entered is by the user. The rest are additions to existing lists, so they will always be valid).
             vName = validateMandatoryString(plan.getName());
@@ -439,6 +591,13 @@ public class App {
 
     /* CREATE PLAN FROM PLANTILLA FUNCTIONS */
 
+    /**
+     * Prompts the user to enter additional values to eliminate from a list field, comma-separated.
+     * Skips if the input is empty. Eliminates each unique, trimmed value using the provided add function.
+     *
+     * @param fieldName   the name of the field (e.g., "destination/s")
+     * @param deleteFunction a Consumer that eliminates a single value to the list
+     */
     private static void deleteList(String fieldName, Consumer<String> deleteFunction) {
         System.out.print("Delete from Plan " + fieldName + " (comma-separated) or press Enter to skip: ");
         String list = scanner.nextLine().trim();
@@ -453,26 +612,47 @@ public class App {
         }
     }
     
-    
+    /**
+     * Allows the user to view, add to, or remove items from a list field interactively.
+     * Continues prompting until the user chooses to keep the current list as-is.
+     *
+     * @param fieldName      the name of the field (used for display purposes)
+     * @param getListFunction a Supplier that returns the current list
+     * @param addFunction     a Consumer that adds a new item to the list
+     * @param deleteFunction  a Consumer that removes an item from the list
+     */
     private static void createPlanFromPlantillaOptions(String fieldName, Supplier<List<String>> getListFunction, Consumer<String> addFunction, Consumer<String> deleteFunction) {
         while (true) {
-            printList(fieldName, getListFunction.get());
-            System.out.println("Do you want to:");
-            System.out.println("  1) Add a " + fieldName);
-            System.out.println("  2) Eliminate a " + fieldName);
-            System.out.println("  3) Keep the actual " + fieldName + " list");
-            System.out.print("Option: ");
-            String option = scanner.nextLine();
-            
-            switch (option) {
-                case "1" -> introduceExtraList(fieldName, addFunction);
-                case "2" -> deleteList(fieldName, deleteFunction);
-                case "3" -> {return;}
-                default -> System.out.println("Invalid option.");
+            if (getListFunction == null) {
+                printList(fieldName, null);
+                introduceExtraList(fieldName, addFunction);
+            }
+            else {
+                printList(fieldName, getListFunction.get());
+                System.out.println("Do you want to:");
+                System.out.println("  1) Add a " + fieldName);
+                System.out.println("  2) Eliminate a " + fieldName);
+                System.out.println("  3) Keep the actual " + fieldName + " list");
+                System.out.print("Option: ");
+                String option = scanner.nextLine();
+                
+                switch (option) {
+                    case "1" -> introduceExtraList(fieldName, addFunction);
+                    case "2" -> deleteList(fieldName, deleteFunction);
+                    case "3" -> {return;}
+                    default -> System.out.println("Invalid option.");
+                }
             }
         }
     }
 
+    
+    /**
+     * Modificate fields of a Plan created after a Plnatilla object by prompting the user.
+     *
+     * @param plan the Plan object to be completed
+     * @return the updated Plan
+     */
     private static Plan setPlanFromPlantillaFieldsByUser (Plan plan) {
         if (plan.getName() == null) plan.setName(introduceString("Plan", "name"));
         if (plan.getDescription() == null) plan.setDescription(introduceString("Plan", "description"));
@@ -486,6 +666,12 @@ public class App {
         return plan;
     } 
 
+    
+    /**
+     * Main function in the creation of a Plan from Plantilla.
+     * Prompts for each field, validates required data, and repeats the process
+     * until all mandatory fields are valid. Once validated, attempts to save the Plan.
+     */
     private static void createPlanFromPlantilla() {
         boolean vName, vDescription, vDestination, vAccommodation, vTransportation, vActivities, vStartDate, vEndDate, vPrice;
         boolean valid;
@@ -501,7 +687,7 @@ public class App {
 
             // Confirmate
             String option = askSave("Plan");
-            if (option.equals("2")) return;
+            if (!option.equals("1")) return;
 
             // Validate
             vName = validateMandatoryString(plan.getName());
