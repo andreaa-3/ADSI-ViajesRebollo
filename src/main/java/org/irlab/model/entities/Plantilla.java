@@ -103,15 +103,26 @@ public class Plantilla {
         this.activities = activities;
     }
 
+    @Override
     public String toString() {
-        return "Plantilla{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", destination=" + destination +
-                ", accommodation=" + accommodation +
-                ", transportation=" + (transportation != null ? new ArrayList<>(transportation) : "[]") +
-                ", activities=" + (activities != null ? new ArrayList<>(activities) : "[]") +
-                '}';
-    }    
+        return String.format(
+            "\n--- Plantilla Details ---\n" +
+            "ID           : %d\n" +
+            "Name         : %s\n" +
+            "Description  : %s\n" +
+            "Destination  : %s\n" +
+            "Accommodation: %s\n" +
+            "Transportation: %s\n" +
+            "Activities   : %s\n",
+            id,
+            name,
+            description,
+            destination,
+            accommodation,
+            String.join(", ", transportation),
+            String.join(", ", activities)
+        );
+    }
+
+ 
 }

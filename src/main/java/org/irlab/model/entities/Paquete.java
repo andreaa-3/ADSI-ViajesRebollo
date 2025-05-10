@@ -37,7 +37,7 @@ public class Paquete {
     private LocalDate endDate;
 
     @Column(nullable = false)
-    private int requiredPeople;
+    private int requiredPeople = -1;
 
     @ElementCollection
     private List<String> accommodation;
@@ -154,18 +154,30 @@ public class Paquete {
 
     @Override
     public String toString() {
-        return "Paquete{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", destination=" + (destination != null ? new ArrayList<>(destination) : "[]") +
-                ", startDate=" + startDate +
-                ", endDate=" + endDate +
-                ", requiredPeople=" + requiredPeople +
-                ", accommodation=" + (accommodation != null ? new ArrayList<>(accommodation) : "[]") +
-                ", transportation=" + (transportation != null ? new ArrayList<>(transportation) : "[]") +
-                ", activities=" + (activities != null ? new ArrayList<>(activities) : "[]") +
-                ", price=" + price +
-                '}';
-    }    
+        return String.format(
+            "\n--- Paquete Details ---\n" +
+            "ID              : %d\n" +
+            "Name            : %s\n" +
+            "Description     : %s\n" +
+            "Destination     : %s\n" +
+            "Start Date      : %s\n" +
+            "End Date        : %s\n" +
+            "Required People : %d\n" +
+            "Accommodation   : %s\n" +
+            "Transportation  : %s\n" +
+            "Activities      : %s\n" +
+            "Price           : %.2f\n",
+            id,
+            name,
+            description,
+            String.join(", ", destination != null ? destination : List.of()),
+            startDate,
+            endDate,
+            requiredPeople,
+            String.join(", ", accommodation != null ? accommodation : List.of()),
+            String.join(", ", transportation != null ? transportation : List.of()),
+            String.join(", ", activities != null ? activities : List.of()),
+            price
+        );
+    }  
 }

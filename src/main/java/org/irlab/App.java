@@ -104,6 +104,20 @@ public class App {
         return !input.isEmpty();
     }
 
+
+    /**
+     * Checks whether a given string is valid by ensuring it is not empty.
+     * This method trims the input beforehand if necessary and returns false
+     * if the string has no visible content.
+     *
+     * @param input the input string to validate
+     * @return {@code true} if the input is not null and not empty; {@code false} otherwise
+     */
+    private static boolean validateStartDateAfterToday(LocalDate startDate) {
+        return startDate != null && !startDate.isBefore(LocalDate.now());
+    }
+
+
     /**
      * Prompts the user to enter a comma-separated list of values for a given class and field.
      * Removes duplicates and empty entries, preserving insertion order.
@@ -233,6 +247,7 @@ public class App {
         if (paquete.getActivities() == null) paquete.setActivities(introduceList("Paquete", "activity/ies"));
         if (paquete.getStartDate() == null) paquete.setStartDate(introduceDate("Paquete", "start date", ""));
         if (paquete.getEndDate() == null) paquete.setEndDate(introduceDate("Paquete", "end date", " (must be after start date)"));
+        if (paquete.getRequiredPeople() == -1) paquete.setRequiredPeople((int) introduceNumber("Paquete", "required people"));
         if (paquete.getPrice() == -1) paquete.setPrice(introduceNumber("Paquete", "price"));
         return paquete;
     }
@@ -250,6 +265,7 @@ public class App {
             try {
                 paqueteService.createPaquete(paquete);
                 System.out.println("Paquete created successfully.");
+                System.out.println("Details: " + paquete.toString());
                 break;
             } catch (PaqueteAlreadyExistsException e) {
                 System.out.println("Error: " + e.getMessage());
@@ -272,7 +288,7 @@ public class App {
      * until all mandatory fields are valid. Once validated, attempts to save the Paquete.
      */
     private static void createPaquete() {
-        boolean vName, vDescription, vDestination, vAccommodation, vTransportation, vActivities, vStartDate, vEndDate, vPrice;
+        boolean vName, vDescription, vDestination, vAccommodation, vTransportation, vActivities, vStartDate, vEndDate, vPrice, vRequiredPeople;
         boolean valid;
         Paquete paquete = new Paquete();
 
@@ -290,12 +306,13 @@ public class App {
             vAccommodation = validateMandatoryList(paquete.getAccommodation());
             vTransportation = validateMandatoryList(paquete.getTransportation());
             vActivities = validateMandatoryList(paquete.getActivities());
-            vStartDate = validateMandatoryDate(paquete.getStartDate());
+            vStartDate = validateMandatoryDate(paquete.getStartDate()) && validateStartDateAfterToday(paquete.getStartDate());
             vEndDate = validateEndDate(paquete.getEndDate(), paquete.getStartDate(), vStartDate);
             vPrice = validateMandatoryPositiveNumber(paquete.getPrice());
+            vRequiredPeople = validateMandatoryPositiveNumber(paquete.getRequiredPeople());
 
             valid = vName && vDescription && vDestination && vAccommodation && vTransportation &&
-                    vActivities && vStartDate && vEndDate && vPrice;
+                    vActivities && vStartDate && vEndDate && vPrice && vRequiredPeople;
 
             if (!valid) {
                 System.out.println("Some mandatory fields are invalid. Please correct them:");
@@ -308,6 +325,7 @@ public class App {
                 if (!vStartDate) paquete.setStartDate(null);
                 if (!vEndDate) paquete.setEndDate(null);
                 if (!vPrice) paquete.setPrice(-1);
+                if (!vRequiredPeople) paquete.setRequiredPeople(-1);
             }
         } while (!valid);
 
@@ -345,6 +363,7 @@ public class App {
             try {
                 plantillaService.createPlantilla(plantilla);
                 System.out.println("Plantilla created successfully.");
+                System.out.println("Details: " + plantilla.toString());
                 break;
             } catch (PlantillaAlreadyExistsException e) {
                 System.out.println("Error: " + e.getMessage());
@@ -500,6 +519,7 @@ public class App {
             try {
                 planService.createPlan(plan);
                 System.out.println("Plan created successfully.");
+                System.out.println("Details: " + plan.toString());
                 break;
             } catch (PlanAlreadyExistsException e) {
                 System.out.println("Error: " + e.getMessage());
@@ -556,9 +576,10 @@ public class App {
      * until all mandatory fields are valid. Once validated, attempts to save the Plan.
      */
     private static void createPlanFromPaquete() {
-        boolean vName, vDescription;
+        boolean vName = true, vDescription = true;
         boolean valid;
-        
+        boolean firstIteration = true;
+
         Paquete basePaquete = chooseFromList(paqueteService.getAllPaquetes(), "Paquete", Paquete::getName);
         if (basePaquete == null) return;
 
@@ -566,13 +587,33 @@ public class App {
         plan = planService.applyBasePaquete(plan, basePaquete);
 
         do {
-            plan = setPlanFromPaqueteFieldsByUser (plan);
+            // Mostrar y pedir todos los campos la primera vez
+            if (firstIteration || !vName) plan.setName(introduceString("Plan", "name"));
+            if (firstIteration || !vDescription) plan.setDescription(introduceString("Plan", "description"));
 
-            // Confirmate
+            if (firstIteration) {
+                System.out.println("Start date: " + plan.getStartDate());
+                System.out.println("End date: " + plan.getEndDate());
+                System.out.println("Price: " + plan.getPrice());
+
+                printList("destination/s", plan.getDestination());
+                introduceExtraList("destination/s", plan::addDestination);
+
+                printList("accommodation/s", plan.getAccommodation());
+                introduceExtraList("accommodation/s", plan::addAccommodation);
+
+                printList("transportation/s", plan.getTransportation());
+                introduceExtraList("transportation/s", plan::addTransportation);
+
+                printList("activity/ies", plan.getActivities());
+                introduceExtraList("activity/ies", plan::addActivity);
+            }
+
+            firstIteration = false;
+
             String option = askSave("Plan");
             if (!option.equals("1")) return;
 
-            // Validate (The only data entered is by the user. The rest are additions to existing lists, so they will always be valid).
             vName = validateMandatoryString(plan.getName());
             vDescription = validateMandatoryString(plan.getDescription());
 
@@ -583,6 +624,7 @@ public class App {
                 if (!vName) plan.setName(null);
                 if (!vDescription) plan.setDescription(null);
             }
+
         } while (!valid);
 
         savePlan(plan);
@@ -648,34 +690,16 @@ public class App {
 
     
     /**
-     * Modificate fields of a Plan created after a Plnatilla object by prompting the user.
-     *
-     * @param plan the Plan object to be completed
-     * @return the updated Plan
-     */
-    private static Plan setPlanFromPlantillaFieldsByUser (Plan plan) {
-        if (plan.getName() == null) plan.setName(introduceString("Plan", "name"));
-        if (plan.getDescription() == null) plan.setDescription(introduceString("Plan", "description"));
-        createPlanFromPlantillaOptions("destination/s", plan::getDestination, plan::addDestination, plan::deleteDestination);
-        createPlanFromPlantillaOptions("accommodation/s", plan::getAccommodation, plan::addAccommodation, plan::deleteAccommodation);
-        createPlanFromPlantillaOptions("transportation/s", plan::getTransportation, plan::addTransportation, plan::deleteTransportation);
-        createPlanFromPlantillaOptions("activity/ies", plan::getActivities, plan::addActivity, plan::deleteActivity);
-        if (plan.getStartDate() == null) plan.setStartDate(introduceDate("Plan", "start date", ""));
-        if (plan.getEndDate() == null) plan.setEndDate(introduceDate("Plan", "end date", " (must be after start date)"));
-        if (plan.getPrice() == -1) plan.setPrice(introduceNumber("Plan", "price"));
-        return plan;
-    } 
-
-    
-    /**
      * Main function in the creation of a Plan from Plantilla.
      * Prompts for each field, validates required data, and repeats the process
      * until all mandatory fields are valid. Once validated, attempts to save the Plan.
      */
     private static void createPlanFromPlantilla() {
-        boolean vName, vDescription, vDestination, vAccommodation, vTransportation, vActivities, vStartDate, vEndDate, vPrice;
+        boolean vName = true, vDescription = true, vDestination = true, vAccommodation = true,
+            vTransportation = true, vActivities = true, vStartDate = true, vEndDate = true, vPrice = true;
         boolean valid;
-        
+        boolean firstIteration = true;
+
         Plantilla basePlantilla = chooseFromList(plantillaService.getAllPlantillas(), "Plantilla", Plantilla::getName);
         if (basePlantilla == null) return;
 
@@ -683,20 +707,38 @@ public class App {
         plan = planService.applyBasePlantilla(plan, basePlantilla);
 
         do {
-            plan = setPlanFromPlantillaFieldsByUser (plan);
+            if (firstIteration) {
+                plan.setName(introduceString("Plan", "name"));
+                plan.setDescription(introduceString("Plan", "description"));
+                createPlanFromPlantillaOptions("destination/s", plan::getDestination, plan::addDestination, plan::deleteDestination);
+                createPlanFromPlantillaOptions("accommodation/s", plan::getAccommodation, plan::addAccommodation, plan::deleteAccommodation);
+                createPlanFromPlantillaOptions("transportation/s", plan::getTransportation, plan::addTransportation, plan::deleteTransportation);
+                createPlanFromPlantillaOptions("activity/ies", plan::getActivities, plan::addActivity, plan::deleteActivity);
+                plan.setStartDate(introduceDate("Plan", "start date", ""));
+                plan.setEndDate(introduceDate("Plan", "end date", " (must be after start date)"));
+                plan.setPrice(introduceNumber("Plan", "price"));
+            } else {
+                if (!vName) plan.setName(introduceString("Plan", "name"));
+                if (!vDescription) plan.setDescription(introduceString("Plan", "description"));
+                if (!vDestination) createPlanFromPlantillaOptions("destination/s", plan::getDestination, plan::addDestination, plan::deleteDestination);
+                if (!vAccommodation) createPlanFromPlantillaOptions("accommodation/s", plan::getAccommodation, plan::addAccommodation, plan::deleteAccommodation);
+                if (!vTransportation) createPlanFromPlantillaOptions("transportation/s", plan::getTransportation, plan::addTransportation, plan::deleteTransportation);
+                if (!vActivities) createPlanFromPlantillaOptions("activity/ies", plan::getActivities, plan::addActivity, plan::deleteActivity);
+                if (!vStartDate) plan.setStartDate(introduceDate("Plan", "start date", ""));
+                if (!vEndDate) plan.setEndDate(introduceDate("Plan", "end date", " (must be after start date)"));
+                if (!vPrice) plan.setPrice(introduceNumber("Plan", "price"));
+            }
 
-            // Confirmate
             String option = askSave("Plan");
             if (!option.equals("1")) return;
 
-            // Validate
             vName = validateMandatoryString(plan.getName());
             vDescription = validateMandatoryString(plan.getDescription());
             vDestination = validateMandatoryList(plan.getDestination());
             vAccommodation = validateMandatoryList(plan.getAccommodation());
             vTransportation = validateMandatoryList(plan.getTransportation());
             vActivities = validateMandatoryList(plan.getActivities());
-            vStartDate = validateMandatoryDate(plan.getStartDate());
+            vStartDate = validateMandatoryDate(plan.getStartDate()) && validateStartDateAfterToday(plan.getStartDate());
             vEndDate = validateEndDate(plan.getEndDate(), plan.getStartDate(), vStartDate);
             vPrice = validateMandatoryPositiveNumber(plan.getPrice());
 
@@ -705,21 +747,15 @@ public class App {
 
             if (!valid) {
                 System.out.println("Some mandatory fields are invalid. Please correct them:");
-                if (!vName) plan.setName(null);
-                if (!vDescription) plan.setDescription(null);
-                // If the lists are invalid, it is because they were deleted all the items, so null is valid.
-                if (!vDestination) plan.setDestination(null);
-                if (!vAccommodation) plan.setAccommodation(null);
-                if (!vTransportation) plan.setTransportation(null);
-                if (!vActivities) plan.setActivities(null);
-                if (!vStartDate) plan.setStartDate(null);
-                if (!vEndDate) plan.setEndDate(null);
-                if (!vPrice) plan.setPrice(-1);
             }
+
+            firstIteration = false;
+
         } while (!valid);
 
         savePlan(plan);
     }
+
 
     public static void main(String[] args) {
         init();

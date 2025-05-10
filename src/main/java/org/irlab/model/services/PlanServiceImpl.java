@@ -11,7 +11,7 @@ import org.irlab.model.entities.Plan;
 import org.irlab.model.entities.Paquete;
 import org.irlab.model.entities.Plantilla;
 import org.irlab.model.exceptions.PlanAlreadyExistsException;
-import org.irlab.model.exceptions.PlanInvalidInheritanceException; // Nueva excepción personalizada
+import org.irlab.model.exceptions.PlanInvalidInheritanceException; 
 import org.irlab.model.exceptions.PlanNotFoundException;
 
 /**

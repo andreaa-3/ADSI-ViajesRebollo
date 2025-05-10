@@ -194,7 +194,7 @@ public class Plan { //Extiende de Plantilla y de Paquete?
     }
 
     public void addTransportation(String transport) {
-        List<String> l = addList(transport, this.accommodation, "Transportation");
+        List<String> l = addList(transport, this.transportation, "Transportation");
         if (l != null) setTransportation(l);
     }
 
@@ -236,17 +236,32 @@ public class Plan { //Extiende de Plantilla y de Paquete?
 
     @Override
     public String toString() {
-        return "Plan{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", destination=" + (destination != null ? new ArrayList<>(destination) : "[]") +
-                ", startDate=" + startDate +
-                ", endDate=" + endDate +
-                ", accommodation=" + (accommodation != null ? new ArrayList<>(accommodation) : "[]") +
-                ", transportation=" + (transportation != null ? new ArrayList<>(transportation) : "[]") +
-                ", activities=" + (activities != null ? new ArrayList<>(activities) : "[]") +
-                ", price=" + price +
-                '}';
-    } 
+        return String.format(
+            "\n--- Plan Details ---\n" +
+            "ID             : %d\n" +
+            "Name           : %s\n" +
+            "Description    : %s\n" +
+            "Destination    : %s\n" +
+            "Start Date     : %s\n" +
+            "End Date       : %s\n" +
+            "Accommodation  : %s\n" +
+            "Transportation : %s\n" +
+            "Activities     : %s\n" +
+            "Price          : %.2f\n" +
+            "Based on       : %s\n",
+            id,
+            name,
+            description,
+            String.join(", ", destination != null ? destination : List.of()),
+            startDate,
+            endDate,
+            String.join(", ", accommodation != null ? accommodation : List.of()),
+            String.join(", ", transportation != null ? transportation : List.of()),
+            String.join(", ", activities != null ? activities : List.of()),
+            price,
+            plantillaBase != null ? "Plantilla: " + plantillaBase.getName() :
+                paqueteBase != null ? "Paquete: " + paqueteBase.getName() : "None"
+        );
+    }
+ 
 }
