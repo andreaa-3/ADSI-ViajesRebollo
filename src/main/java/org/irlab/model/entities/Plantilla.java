@@ -106,23 +106,28 @@ public class Plantilla {
     @Override
     public String toString() {
         return String.format(
-            "\n--- Plantilla Details ---\n" +
-            "ID           : %d\n" +
-            "Name         : %s\n" +
-            "Description  : %s\n" +
-            "Destination  : %s\n" +
-            "Accommodation: %s\n" +
-            "Transportation: %s\n" +
-            "Activities   : %s\n",
+            "\n========== TEMPLATE DETAILS ==========\n" +
+            "  General Info\n" +
+            "  ID             : %d\n" +
+            "  Name           : %s\n" +
+            "  Description    : %s\n" +
+            "\n Details\n" +
+            "  Destination    : %s\n" +
+            "  Accommodation  : %s\n" +
+            "  Transportation : %s\n" +
+            "  Activities     : %s\n" +
+            "======================================\n",
             id,
             name,
             description,
             destination,
             accommodation,
-            String.join(", ", transportation),
-            String.join(", ", activities)
+            transportation != null ? String.join(", ", transportation) : "None",
+            activities != null ? String.join(", ", activities) : "None"
         );
     }
+
+
 
  
 }

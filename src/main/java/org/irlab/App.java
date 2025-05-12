@@ -42,6 +42,32 @@ public class App {
     private static final String YELLOW = "\u001B[33m";
     private static final String BLUE = "\u001B[34m";
     private static final String BLANCO = "\u001B[01m";
+    private static final String BRIGHT = "\u001B[1m";
+    private static final String SEPARATOR = "=====================================";
+
+    private static void printError(String message) {
+        System.out.println("\n" + SEPARATOR);
+        System.out.println(RED + "[ERROR] " + message + RESET);
+        System.out.println(SEPARATOR);
+    }
+
+
+    private static void printValidationError(String field, String reason) {
+        System.out.println(RED + " * " + field + ": " + reason + RESET);
+    }
+
+
+    private static void printSuccess(String message) {
+        System.out.println("\n" + SEPARATOR);
+        System.out.println(GREEN + "[SUCCESS]  " + message + RESET);
+        System.out.println(SEPARATOR);
+    }
+
+    private static void printTitle(String title) {
+        System.out.println("\n" + SEPARATOR);
+        System.out.println(BLUE + ">> " + title.toUpperCase() + RESET);
+        System.out.println(SEPARATOR);
+    }
 
     private static void init() {
         try (EntityManager em = AppEntityManagerFactory.getInstance().createEntityManager()) {
@@ -52,23 +78,31 @@ public class App {
     private static void shutdown() {
         AppEntityManagerFactory.close();
         scanner.close();
+        System.out.println(RED + "\nFinish." + RESET);
+
     }
 
     private static Command getCommand() {
-        System.out.println(YELLOW + "Choose an option:" + RESET);
-        System.out.println(BLANCO + "  1) Create Paquete" + RESET);
-        System.out.println(BLANCO + "  2) Create Plantilla" + RESET);
-        System.out.println(BLANCO + "  3) Create Plan Específico" + RESET);
+        printTitle("Viajes Rebollo - Home");        
+        System.out.println(BRIGHT + "  1) Create Paquete" + RESET);
+        System.out.println(BRIGHT + "  2) Create Plantilla" + RESET);
+        System.out.println(BRIGHT + "  3) Create Plan Específico" + RESET);
         System.out.println(RED + "  q) Exit" + RESET);
 
         while (true) {
-            System.out.print(YELLOW + "Option: " + RESET);
-            switch (scanner.nextLine()) {
+            System.out.print(YELLOW + "\nSelect an option: " + RESET);
+            String input = scanner.nextLine().trim();
+            switch (input) {
                 case "1": return Command.CREATE_PAQUETE;
                 case "2": return Command.CREATE_PLANTILLA;
                 case "3": return Command.CREATE_PLAN;
-                case "q": return Command.EXIT;
-                default: System.out.println(RED + "Invalid option. Try again." + RESET);
+                case "q":
+                    System.out.print(RED + "¿Do you want yo leave? (y/n): " + RESET);
+                    String confirm = scanner.nextLine().trim().toLowerCase();
+                    if (confirm.equals("y")) return Command.EXIT;
+                    break;
+                default:
+                    System.out.println(RED + "\n[ERROR] Invalid option. Try again." + RESET);
             }
         }
     }
@@ -273,23 +307,22 @@ public class App {
         while (true) {
             try {
                 paqueteService.createPaquete(paquete);
-                System.out.println(GREEN + "Paquete created successfully." + RESET);
-                System.out.println("Details: " + paquete.toString());
+                printSuccess("Paquete created successfully.");
+                System.out.println(paquete.toString());
                 break;
             } catch (PaqueteAlreadyExistsException e) {
-                System.out.println(RED + "Error: " + e.getMessage() + RESET);
-                
-                Paquete existent;
+                printError(e.getMessage());
                 try {
-                    existent = paqueteService.getPaqueteByName(paquete.getName());
+                    Paquete existent = paqueteService.getPaqueteByName(paquete.getName());
                     System.out.println("Existent Paquete: " + existent);
                     paquete.setName(introduceString("Paquete", "name"));
-                } catch (PaqueteNotFoundException e1) { // It should never happen
-                    System.out.println(e1.getMessage());
+                } catch (PaqueteNotFoundException e1) {
+                    printError("Unexpected error: " + e1.getMessage());
                 }
             }
         }
     }
+
 
     /**
      * Main function in the creation of a Paquete.
@@ -323,18 +356,49 @@ public class App {
                     vActivities && vStartDate && vEndDate && vPrice && vRequiredPeople;
 
             if (!valid) {
-                System.out.println(RED + "Some mandatory fields are invalid. Please correct them:" + RESET);
-                if (!vName) paquete.setName(null);
-                if (!vDescription) paquete.setDescription(null);
-                if (!vDestination) paquete.setDestination(null);
-                if (!vAccommodation) paquete.setAccommodation(null);
-                if (!vTransportation) paquete.setTransportation(null);
-                if (!vActivities) paquete.setActivities(null);
-                if (!vStartDate) paquete.setStartDate(null);
-                if (!vEndDate) paquete.setEndDate(null);
-                if (!vPrice) paquete.setPrice(-1);
-                if (!vRequiredPeople) paquete.setRequiredPeople(-1);
+                printError("Some mandatory fields are invalid. Please correct them:");
+                if (!vName) {
+                    printValidationError("Name", "is required.");
+                    paquete.setName(null);
+                }
+                if (!vDescription) {
+                    printValidationError("Description", "is required.");
+                    paquete.setDescription(null);
+                }
+                if (!vDestination) {
+                    printValidationError("Destination", "At least one destination is required.");
+                    paquete.setDestination(null);
+                }
+                if (!vAccommodation) {
+                    printValidationError("Accommodation", "At least one accommodation is required.");
+                    paquete.setAccommodation(null);
+                }
+                if (!vTransportation) {
+                    printValidationError("Transportation", "At least one transportation method is required.");
+                    paquete.setTransportation(null);
+                }
+                if (!vActivities) {
+                    printValidationError("Activity", "At least one activity is required.");
+                    paquete.setActivities(null);
+                }
+                if (!vStartDate) {
+                    printValidationError("Start Date", "is required and must not be before today.");
+                    paquete.setStartDate(null);
+                }
+                if (!vEndDate) {
+                    printValidationError("End Date", "is required and must be after the start date.");
+                    paquete.setEndDate(null);
+                }
+                if (!vPrice) {
+                    printValidationError("Price", "must be a positive number.");
+                    paquete.setPrice(-1);
+                }
+                if (!vRequiredPeople) {
+                    printValidationError("Required People", "must be a positive number.");
+                    paquete.setRequiredPeople(-1);
+                }
             }
+
         } while (!valid);
 
         savePaquete(paquete);
@@ -370,22 +434,22 @@ public class App {
         while (true) {
             try {
                 plantillaService.createPlantilla(plantilla);
-                System.out.println(GREEN + "Plantilla created successfully." + RESET);
-                System.out.println("Details: " + plantilla.toString());
+                printSuccess("Plantilla created successfully.");
+                System.out.println(plantilla.toString());
                 break;
             } catch (PlantillaAlreadyExistsException e) {
-                System.out.println(RED + "Error: " + e.getMessage() + RESET);
-    
+                printError(e.getMessage());
                 try {
                     Plantilla existent = plantillaService.getPlantillaByName(plantilla.getName());
                     System.out.println("Existent Plantilla: " + existent);
                     plantilla.setName(introduceString("Plantilla", "name"));
-                } catch (PlantillaNotFoundException e1) { // Esto no debería ocurrir
-                    System.out.println(RED + "Unexpected error: " + e1.getMessage() + RESET);
+                } catch (PlantillaNotFoundException e1) {
+                    printError("Unexpected error: " + e1.getMessage());
                 }
             }
         }
-    }    
+    }
+
 
     /**
      * Main function in the creation of a Plantilla.
@@ -415,15 +479,34 @@ public class App {
             valid = vName && vDescription && vDestination && vAccommodation && vTransportation &&
                     vActivities;
 
-            if (!valid) {
-                System.out.println(RED + "Some mandatory fields are invalid. Please correct them:" + RESET);
-                if (!vName) plantilla.setName(null);
-                if (!vDescription) plantilla.setDescription(null);
-                if (!vDestination) plantilla.setDestination(null);
-                if (!vAccommodation) plantilla.setAccommodation(null);
-                if (!vTransportation) plantilla.setTransportation(null);
-                if (!vActivities) plantilla.setActivities(null);
+             if (!valid) {
+                printError("Some mandatory fields are invalid. Please correct them:");
+                if (!vName) {
+                    printValidationError("Name", "is required.");
+                    plantilla.setName(null);
+                }
+                if (!vDescription) {
+                    printValidationError("Description", "is required.");
+                    plantilla.setDescription(null);
+                }
+                if (!vDestination) {
+                    printValidationError("Destination", "is required.");
+                    plantilla.setDestination(null);
+                }
+                if (!vAccommodation) {
+                    printValidationError("Accommodation", "is required.");
+                    plantilla.setAccommodation(null);
+                }
+                if (!vTransportation) {
+                    printValidationError("Transportation", "At least one transportation method is required.");
+                    plantilla.setTransportation(null);
+                }
+                if (!vActivities) {
+                    printValidationError("Activity", "At least one activity is required.");
+                    plantilla.setActivities(null);
+                }
             }
+
         } while (!valid);
 
         savePlantilla(plantilla);
@@ -526,25 +609,25 @@ public class App {
         while (true) {
             try {
                 planService.createPlan(plan);
-                System.out.println(GREEN + "Plan created successfully." + RESET);
-                System.out.println("Details: " + plan.toString());
+                printSuccess("Plan created successfully.");
+                System.out.println(plan.toString());
                 break;
             } catch (PlanAlreadyExistsException e) {
-                System.out.println(RED + "Error: " + e.getMessage() + RESET);
-    
+                printError(e.getMessage());
                 try {
                     Plan existent = planService.getPlanByName(plan.getName());
                     System.out.println("Existent Plan: " + existent);
                     plan.setName(introduceString("Plan", "name"));
-                } catch (PlanNotFoundException e1) { // Esto no debería ocurrir
-                    System.out.println(RED + "Unexpected error: " + e1.getMessage() + RESET);
+                } catch (PlanNotFoundException e1) {
+                    printError("Unexpected error: " + e1.getMessage());
                 }
             } catch (PlanInvalidInheritanceException e1) {
-                System.out.println(RED + "Error: " + e1.getMessage() + RESET);
+                printError(e1.getMessage());
                 return;
             }
         }
-    }  
+    }
+
 
     /* CREATE PLAN FROM PAQUETE FUNCTIONS */
     /**
@@ -628,9 +711,15 @@ public class App {
             valid = vName && vDescription;
 
             if (!valid) {
-                System.out.println(RED + "Some mandatory fields are invalid. Please correct them:" + RESET);
-                if (!vName) plan.setName(null);
-                if (!vDescription) plan.setDescription(null);
+                printError("Some mandatory fields are invalid. Please correct them:");
+                if (!vName) {
+                    printValidationError("Name", "is required.");
+                    plan.setName(null);
+                }
+                if (!vDescription) {
+                    printValidationError("Description", "is required.");
+                    plan.setDescription(null);
+                }
             }
 
         } while (!valid);
@@ -703,66 +792,76 @@ public class App {
      * until all mandatory fields are valid. Once validated, attempts to save the Plan.
      */
     private static void createPlanFromPlantilla() {
-        boolean vName = true, vDescription = true, vDestination = true, vAccommodation = true,
-            vTransportation = true, vActivities = true, vStartDate = true, vEndDate = true, vPrice = true;
-        boolean valid;
-        boolean firstIteration = true;
+    boolean vName = true, vDescription = true, vDestination = true, vAccommodation = true,
+        vTransportation = true, vActivities = true, vStartDate = true, vEndDate = true, vPrice = true;
+    boolean valid;
+    boolean firstIteration = true;
 
-        Plantilla basePlantilla = chooseFromList(plantillaService.getAllPlantillas(), "Plantilla", Plantilla::getName);
-        if (basePlantilla == null) return;
+    Plantilla basePlantilla = chooseFromList(plantillaService.getAllPlantillas(), "Plantilla", Plantilla::getName);
+    if (basePlantilla == null) return;
 
-        Plan plan = new Plan();
-        plan = planService.applyBasePlantilla(plan, basePlantilla);
+    Plan plan = new Plan();
+    plan = planService.applyBasePlantilla(plan, basePlantilla);
 
-        do {
-            if (firstIteration) {
-                plan.setName(introduceString("Plan", "name"));
-                plan.setDescription(introduceString("Plan", "description"));
-                createPlanFromPlantillaOptions("destination/s", plan::getDestination, plan::addDestination, plan::deleteDestination);
-                createPlanFromPlantillaOptions("accommodation/s", plan::getAccommodation, plan::addAccommodation, plan::deleteAccommodation);
-                createPlanFromPlantillaOptions("transportation/s", plan::getTransportation, plan::addTransportation, plan::deleteTransportation);
-                createPlanFromPlantillaOptions("activity/ies", plan::getActivities, plan::addActivity, plan::deleteActivity);
-                plan.setStartDate(introduceDate("Plan", "start date", ""));
-                plan.setEndDate(introduceDate("Plan", "end date", " (must be after start date)"));
-                plan.setPrice(introduceNumber("Plan", "price"));
-            } else {
-                if (!vName) plan.setName(introduceString("Plan", "name"));
-                if (!vDescription) plan.setDescription(introduceString("Plan", "description"));
-                if (!vDestination) createPlanFromPlantillaOptions("destination/s", plan::getDestination, plan::addDestination, plan::deleteDestination);
-                if (!vAccommodation) createPlanFromPlantillaOptions("accommodation/s", plan::getAccommodation, plan::addAccommodation, plan::deleteAccommodation);
-                if (!vTransportation) createPlanFromPlantillaOptions("transportation/s", plan::getTransportation, plan::addTransportation, plan::deleteTransportation);
-                if (!vActivities) createPlanFromPlantillaOptions("activity/ies", plan::getActivities, plan::addActivity, plan::deleteActivity);
-                if (!vStartDate) plan.setStartDate(introduceDate("Plan", "start date", ""));
-                if (!vEndDate) plan.setEndDate(introduceDate("Plan", "end date", " (must be after start date)"));
-                if (!vPrice) plan.setPrice(introduceNumber("Plan", "price"));
-            }
+    do {
+        if (firstIteration) {
+            plan.setName(introduceString("Plan", "name"));
+            plan.setDescription(introduceString("Plan", "description"));
+            createPlanFromPlantillaOptions("destination/s", plan::getDestination, plan::addDestination, plan::deleteDestination);
+            createPlanFromPlantillaOptions("accommodation/s", plan::getAccommodation, plan::addAccommodation, plan::deleteAccommodation);
+            createPlanFromPlantillaOptions("transportation/s", plan::getTransportation, plan::addTransportation, plan::deleteTransportation);
+            createPlanFromPlantillaOptions("activity/ies", plan::getActivities, plan::addActivity, plan::deleteActivity);
+            plan.setStartDate(introduceDate("Plan", "start date", ""));
+            plan.setEndDate(introduceDate("Plan", "end date", " (must be after start date)"));
+            plan.setPrice(introduceNumber("Plan", "price"));
+        } else {
+            if (!vName) plan.setName(introduceString("Plan", "name"));
+            if (!vDescription) plan.setDescription(introduceString("Plan", "description"));
+            if (!vDestination) createPlanFromPlantillaOptions("destination/s", plan::getDestination, plan::addDestination, plan::deleteDestination);
+            if (!vAccommodation) createPlanFromPlantillaOptions("accommodation/s", plan::getAccommodation, plan::addAccommodation, plan::deleteAccommodation);
+            if (!vTransportation) createPlanFromPlantillaOptions("transportation/s", plan::getTransportation, plan::addTransportation, plan::deleteTransportation);
+            if (!vActivities) createPlanFromPlantillaOptions("activity/ies", plan::getActivities, plan::addActivity, plan::deleteActivity);
+            if (!vStartDate) plan.setStartDate(introduceDate("Plan", "start date", ""));
+            if (!vEndDate) plan.setEndDate(introduceDate("Plan", "end date", " (must be after start date)"));
+            if (!vPrice) plan.setPrice(introduceNumber("Plan", "price"));
+        }
 
-            String option = askSave("Plan");
-            if (!option.equals("1")) return;
+        String option = askSave("Plan");
+        if (!option.equals("1")) return;
 
-            vName = validateMandatoryString(plan.getName());
-            vDescription = validateMandatoryString(plan.getDescription());
-            vDestination = validateMandatoryList(plan.getDestination());
-            vAccommodation = validateMandatoryList(plan.getAccommodation());
-            vTransportation = validateMandatoryList(plan.getTransportation());
-            vActivities = validateMandatoryList(plan.getActivities());
-            vStartDate = validateMandatoryDate(plan.getStartDate()) && validateStartDateAfterToday(plan.getStartDate());
-            vEndDate = validateEndDate(plan.getEndDate(), plan.getStartDate(), vStartDate);
-            vPrice = validateMandatoryPositiveNumber(plan.getPrice());
+        vName = validateMandatoryString(plan.getName());
+        vDescription = validateMandatoryString(plan.getDescription());
+        vDestination = validateMandatoryList(plan.getDestination());
+        vAccommodation = validateMandatoryList(plan.getAccommodation());
+        vTransportation = validateMandatoryList(plan.getTransportation());
+        vActivities = validateMandatoryList(plan.getActivities());
+        vStartDate = validateMandatoryDate(plan.getStartDate()) && validateStartDateAfterToday(plan.getStartDate());
+        vEndDate = validateEndDate(plan.getEndDate(), plan.getStartDate(), vStartDate);
+        vPrice = validateMandatoryPositiveNumber(plan.getPrice());
 
-            valid = vName && vDescription && vDestination && vAccommodation && vTransportation &&
-                    vActivities && vStartDate && vEndDate && vPrice;
+        valid = vName && vDescription && vDestination && vAccommodation && vTransportation &&
+                vActivities && vStartDate && vEndDate && vPrice;
 
-            if (!valid) {
-                System.out.println(RED + "Some mandatory fields are invalid. Please correct them:" + RESET);
-            }
+        if (!valid) {
+            printError("Some mandatory fields are invalid. Please correct them:");
+            if (!vName) printValidationError("Name", "is required.");
+            if (!vDescription) printValidationError("Description", "is required.");
+            if (!vDestination) printValidationError("Destination", "At least one destination is required.");
+            if (!vAccommodation) printValidationError("Accommodation", "At least one accommodation is required.");
+            if (!vTransportation) printValidationError("Transportation", "At least one transportation method is required.");
+            if (!vActivities) printValidationError("Activity", "At least one activity is required.");
+            if (!vStartDate) printValidationError("Start Date", "is required and must not be before today.");
+            if (!vEndDate) printValidationError("End Date", "is required and must be after the start date.");
+            if (!vPrice) printValidationError("Price", "must be a positive number.");
+        }
 
-            firstIteration = false;
+        firstIteration = false;
 
-        } while (!valid);
+    } while (!valid);
 
-        savePlan(plan);
-    }
+    savePlan(plan);
+}
+
 
 
     public static void main(String[] args) {
