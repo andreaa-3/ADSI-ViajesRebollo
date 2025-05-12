@@ -51,12 +51,11 @@ public class App {
         System.out.println("Choose an option:");
         System.out.println("  1) Create Paquete");
         System.out.println("  2) Create Plantilla");
-        System.out.println("  3) Create Specific Plan");
+        System.out.println("  3) Create Plan Específico");
         System.out.println("  q) Exit");
         while (true) {
             System.out.print("Option: ");
-            String input = scanner.nextLine();
-            switch (input) {
+            switch (scanner.nextLine()) {
                 case "1": return Command.CREATE_PAQUETE;
                 case "2": return Command.CREATE_PLANTILLA;
                 case "3": return Command.CREATE_PLAN;
@@ -74,11 +73,8 @@ public class App {
      * @param className the name of the class or object to be saved (e.g., "Plan", "Package")
      * @return the user's input as a string, typically "1" for Yes or "2" for No
      */
-    private static String askSave (String className) {
-        System.out.println("Do you want to save the " + className + ":");
-        System.out.println("  1) Yes");
-        System.out.println("  Else) No");
-        System.out.print("Option: ");
+    private static String askSave(String className) {
+        System.out.print("Do you want to save the " + className + ":\n  1) Yes\n  2) No\nOption: ");
         return scanner.nextLine();
     }
 
@@ -288,8 +284,7 @@ public class App {
      * until all mandatory fields are valid. Once validated, attempts to save the Paquete.
      */
     private static void createPaquete() {
-        boolean vName, vDescription, vDestination, vAccommodation, vTransportation, vActivities, vStartDate, vEndDate, vPrice, vRequiredPeople;
-        boolean valid;
+        boolean vName, vDescription, vDestination, vAccommodation, vTransportation, vActivities, vStartDate, vEndDate, vPrice, vRequiredPeople, valid;
         Paquete paquete = new Paquete();
 
         do {

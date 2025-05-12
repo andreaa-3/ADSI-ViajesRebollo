@@ -3,8 +3,9 @@
   xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd"
   version="3.0">
   <persistence-unit name="test-persistence-unit" transaction-type="RESOURCE_LOCAL">
-    <class>org.irlab.model.entities.User</class>
-    <class>org.irlab.model.entities.Role</class>
+    <class>org.irlab.model.entities.Paquete</class>
+    <class>org.irlab.model.entities.Plan</class>
+    <class>org.irlab.model.entities.Plantilla</class>
     <!-- <exclude-unlisted-classes>false</exclude-unlisted-classes> -->
     <properties>
       <property name="jakarta.persistence.jdbc.driver" value="org.apache.derby.iapi.jdbc.AutoloadedDriver" />
