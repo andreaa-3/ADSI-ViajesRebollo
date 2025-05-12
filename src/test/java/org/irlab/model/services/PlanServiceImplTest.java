@@ -7,10 +7,12 @@ import org.irlab.model.entities.Plantilla;
 import org.irlab.model.exceptions.PlanAlreadyExistsException;
 import org.irlab.model.exceptions.PlanInvalidInheritanceException;
 import org.irlab.model.exceptions.PlanNotFoundException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -18,17 +20,23 @@ import static org.junit.jupiter.api.Assertions.*;
 class PlanServiceImplTest {
 
     private PlanServiceImpl planService;
+    private List<String> planesCreados; // Lista para rastrear los nombres de los planes creados
 
     @BeforeEach
     void setUp() {
         planService = new PlanServiceImpl();
-        limpiarBaseDeDatos();
+        planesCreados = new ArrayList<>();
     }
 
-    private void limpiarBaseDeDatos() {
+    @AfterEach
+    void limpiarPlanesCreados() {
         try (var em = AppEntityManagerFactory.getInstance().createEntityManager()) {
             em.getTransaction().begin();
-            em.createQuery("DELETE FROM Plan").executeUpdate();
+            for (String planName : planesCreados) {
+                em.createQuery("DELETE FROM Plan p WHERE p.name = :name")
+                  .setParameter("name", planName)
+                  .executeUpdate();
+            }
             em.getTransaction().commit();
         }
     }
@@ -47,6 +55,7 @@ class PlanServiceImplTest {
         plan.setPrice(1500.00);
 
         assertDoesNotThrow(() -> planService.createPlan(plan));
+        planesCreados.add(plan.getName()); // Registrar el plan creado
     }
 
     @Test
@@ -64,6 +73,7 @@ class PlanServiceImplTest {
 
         // Crear el plan por primera vez
         assertDoesNotThrow(() -> planService.createPlan(plan));
+        planesCreados.add(plan.getName()); // Registrar el plan creado
 
         // Intentar crearlo nuevamente debería lanzar una excepción
         assertThrows(PlanAlreadyExistsException.class, () -> planService.createPlan(plan));
@@ -83,6 +93,7 @@ class PlanServiceImplTest {
         plan.setPrice(2500.00);
 
         planService.createPlan(plan);
+        planesCreados.add(plan.getName()); // Registrar el plan creado
 
         Plan foundPlan = planService.getPlanByName("Plan Relax");
         assertNotNull(foundPlan);
@@ -98,13 +109,14 @@ class PlanServiceImplTest {
 
     @Test
     void testGetPlanByName_NotFound() {
+        // No se crea ningún plan, por lo que no es necesario registrar nada en planesCreados
         assertThrows(PlanNotFoundException.class, () -> planService.getPlanByName("Plan Inexistente"));
     }
 
     @Test
     void testGetAllPlans() throws PlanAlreadyExistsException, PlanInvalidInheritanceException {
         Plan plan1 = new Plan();
-        plan1.setName("Plan Aventura");
+        plan1.setName("Plan_UNIQUE123_Aventura");
         plan1.setDescription("Un plan lleno de aventuras");
         plan1.setDestination(List.of("Montañas", "Bosque"));
         plan1.setActivities(List.of("Senderismo", "Escalada"));
@@ -115,7 +127,7 @@ class PlanServiceImplTest {
         plan1.setPrice(1500.00);
 
         Plan plan2 = new Plan();
-        plan2.setName("Plan Relax");
+        plan2.setName("Plan_UNIQUE456_Relax");
         plan2.setDescription("Un plan para relajarse");
         plan2.setDestination(List.of("Playa", "Isla"));
         plan2.setActivities(List.of("Natación", "Yoga"));
@@ -128,8 +140,16 @@ class PlanServiceImplTest {
         planService.createPlan(plan1);
         planService.createPlan(plan2);
 
+        planesCreados.add(plan1.getName()); // Registrar el plan creado
+        planesCreados.add(plan2.getName()); // Registrar el plan creado
+
+        // Obtener todos los planes y filtrar por los nombres creados en este test
         List<Plan> plans = planService.getAllPlans();
-        assertEquals(2, plans.size());
+        List<Plan> plansFiltrados = plans.stream()
+            .filter(p -> planesCreados.contains(p.getName()))
+            .toList();
+
+        assertEquals(2, plansFiltrados.size());
     }
 
     @Test

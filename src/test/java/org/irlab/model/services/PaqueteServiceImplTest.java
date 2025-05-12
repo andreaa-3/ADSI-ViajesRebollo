@@ -4,10 +4,12 @@ import org.irlab.common.AppEntityManagerFactory;
 import org.irlab.model.entities.Paquete;
 import org.irlab.model.exceptions.PaqueteAlreadyExistsException;
 import org.irlab.model.exceptions.PaqueteNotFoundException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -15,25 +17,27 @@ import static org.junit.jupiter.api.Assertions.*;
 class PaqueteServiceImplTest {
 
     private PaqueteServiceImpl paqueteService;
+    private List<String> paquetesCreados; // Lista para rastrear los nombres de los paquetes creados
 
     @BeforeEach
     void setUp() {
         paqueteService = new PaqueteServiceImpl();
-        limpiarBaseDeDatos();
+        paquetesCreados = new ArrayList<>();
     }
 
-    // Ojo con esto !, creo puede eliminar los datos insertados por los 
-        // scripts sql de inicialización de la base de datos.
-
-    private void limpiarBaseDeDatos() {
+    @AfterEach
+    void limpiarPaquetesCreados() {
         try (var em = AppEntityManagerFactory.getInstance().createEntityManager()) {
             em.getTransaction().begin();
-            em.createQuery("DELETE FROM Paquete").executeUpdate();
+            for (String paqueteName : paquetesCreados) {
+                em.createQuery("DELETE FROM Paquete p WHERE p.name = :name")
+                  .setParameter("name", paqueteName)
+                  .executeUpdate();
+            }
             em.getTransaction().commit();
         }
     }
 
-    
     @Test
     void testCreatePaquete_Success() {
         Paquete paquete = new Paquete();
@@ -45,6 +49,7 @@ class PaqueteServiceImplTest {
         paquete.setPrice(1200.50);
 
         assertDoesNotThrow(() -> paqueteService.createPaquete(paquete));
+        paquetesCreados.add(paquete.getName()); // Registrar el paquete creado
     }
 
     @Test
@@ -59,6 +64,7 @@ class PaqueteServiceImplTest {
 
         // Crear el paquete por primera vez
         assertDoesNotThrow(() -> paqueteService.createPaquete(paquete));
+        paquetesCreados.add(paquete.getName()); // Registrar el paquete creado
 
         // Intentar crearlo nuevamente debería lanzar una excepción
         assertThrows(PaqueteAlreadyExistsException.class, () -> paqueteService.createPaquete(paquete));
@@ -75,6 +81,7 @@ class PaqueteServiceImplTest {
         paquete.setPrice(2500.00);
 
         paqueteService.createPaquete(paquete);
+        paquetesCreados.add(paquete.getName()); // Registrar el paquete creado
 
         Paquete foundPaquete = paqueteService.getPaqueteByName("Paquete Relax");
         assertNotNull(foundPaquete);
@@ -89,7 +96,7 @@ class PaqueteServiceImplTest {
     @Test
     void testGetAllPaquetes() throws PaqueteAlreadyExistsException {
         Paquete paquete1 = new Paquete();
-        paquete1.setName("Paquete Aventura");
+        paquete1.setName("Paquete_XYZ123_Aventura");
         paquete1.setDescription("Un paquete lleno de aventuras");
         paquete1.setStartDate(LocalDate.of(2025, 6, 1));
         paquete1.setEndDate(LocalDate.of(2025, 6, 10));
@@ -97,7 +104,7 @@ class PaqueteServiceImplTest {
         paquete1.setPrice(1200.50);
 
         Paquete paquete2 = new Paquete();
-        paquete2.setName("Paquete Relax");
+        paquete2.setName("Paquete_ABC987_Relax");
         paquete2.setDescription("Un paquete para relajarse");
         paquete2.setStartDate(LocalDate.of(2025, 7, 15));
         paquete2.setEndDate(LocalDate.of(2025, 7, 25));
@@ -107,7 +114,15 @@ class PaqueteServiceImplTest {
         paqueteService.createPaquete(paquete1);
         paqueteService.createPaquete(paquete2);
 
+        paquetesCreados.add(paquete1.getName()); // Registrar el paquete creado
+        paquetesCreados.add(paquete2.getName()); // Registrar el paquete creado
+
+        // Obtener todos los paquetes y filtrar por los nombres creados en este test
         List<Paquete> paquetes = paqueteService.getAllPaquetes();
-        assertEquals(2, paquetes.size());
+        List<Paquete> paquetesFiltrados = paquetes.stream()
+            .filter(p -> paquetesCreados.contains(p.getName()))
+            .toList();
+
+        assertEquals(2, paquetesFiltrados.size());
     }
 }

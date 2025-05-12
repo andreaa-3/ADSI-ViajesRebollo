@@ -4,8 +4,10 @@ import org.irlab.common.AppEntityManagerFactory;
 import org.irlab.model.entities.Plantilla;
 import org.irlab.model.exceptions.PlantillaAlreadyExistsException;
 import org.irlab.model.exceptions.PlantillaNotFoundException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -13,17 +15,23 @@ import static org.junit.jupiter.api.Assertions.*;
 class PlantillaServiceImplTest {
 
     private PlantillaServiceImpl plantillaService;
+    private List<String> plantillasCreadas; // Lista para rastrear los nombres de las plantillas creadas
 
     @BeforeEach
     void setUp() {
         plantillaService = new PlantillaServiceImpl();
-        limpiarBaseDeDatos();
+        plantillasCreadas = new ArrayList<>();
     }
 
-    private void limpiarBaseDeDatos() {
+    @AfterEach
+    void limpiarPlantillasCreadas() {
         try (var em = AppEntityManagerFactory.getInstance().createEntityManager()) {
             em.getTransaction().begin();
-            em.createQuery("DELETE FROM Plantilla").executeUpdate();
+            for (String plantillaName : plantillasCreadas) {
+                em.createQuery("DELETE FROM Plantilla p WHERE p.name = :name")
+                  .setParameter("name", plantillaName)
+                  .executeUpdate();
+            }
             em.getTransaction().commit();
         }
     }
@@ -37,6 +45,7 @@ class PlantillaServiceImplTest {
         plantilla.setAccommodation("Hotel 5 estrellas");
 
         assertDoesNotThrow(() -> plantillaService.createPlantilla(plantilla));
+        plantillasCreadas.add(plantilla.getName()); // Registrar la plantilla creada
     }
 
     @Test
@@ -49,6 +58,7 @@ class PlantillaServiceImplTest {
 
         // Crear la plantilla por primera vez
         assertDoesNotThrow(() -> plantillaService.createPlantilla(plantilla));
+        plantillasCreadas.add(plantilla.getName()); // Registrar la plantilla creada
 
         // Intentar crearla nuevamente debería lanzar una excepción
         assertThrows(PlantillaAlreadyExistsException.class, () -> plantillaService.createPlantilla(plantilla));
@@ -63,6 +73,7 @@ class PlantillaServiceImplTest {
         plantilla.setAccommodation("Resort todo incluido");
 
         plantillaService.createPlantilla(plantilla);
+        plantillasCreadas.add(plantilla.getName()); // Registrar la plantilla creada
 
         Plantilla foundPlantilla = plantillaService.getPlantillaByName("Plantilla Relax");
         assertNotNull(foundPlantilla);
@@ -71,19 +82,20 @@ class PlantillaServiceImplTest {
 
     @Test
     void testGetPlantillaByName_NotFound() {
+        // No se crea ninguna plantilla, por lo que no es necesario registrar nada en plantillasCreadas
         assertThrows(PlantillaNotFoundException.class, () -> plantillaService.getPlantillaByName("Plantilla Inexistente"));
     }
 
     @Test
     void testGetAllPlantillas() throws PlantillaAlreadyExistsException {
         Plantilla plantilla1 = new Plantilla();
-        plantilla1.setName("Plantilla Aventura");
+        plantilla1.setName("Plantilla_UNIQUE123_Aventura");
         plantilla1.setDescription("Una plantilla llena de aventuras");
         plantilla1.setDestination("Montañas");
         plantilla1.setAccommodation("Hotel 5 estrellas");
 
         Plantilla plantilla2 = new Plantilla();
-        plantilla2.setName("Plantilla Relax");
+        plantilla2.setName("Plantilla_UNIQUE456_Relax");
         plantilla2.setDescription("Una plantilla para relajarse");
         plantilla2.setDestination("Playa");
         plantilla2.setAccommodation("Resort todo incluido");
@@ -91,7 +103,15 @@ class PlantillaServiceImplTest {
         plantillaService.createPlantilla(plantilla1);
         plantillaService.createPlantilla(plantilla2);
 
+        plantillasCreadas.add(plantilla1.getName()); // Registrar la plantilla creada
+        plantillasCreadas.add(plantilla2.getName()); // Registrar la plantilla creada
+
+        // Obtener todas las plantillas y filtrar por los nombres creados en este test
         List<Plantilla> plantillas = plantillaService.getAllPlantillas();
-        assertEquals(2, plantillas.size());
+        List<Plantilla> plantillasFiltradas = plantillas.stream()
+            .filter(p -> plantillasCreadas.contains(p.getName()))
+            .toList();
+
+        assertEquals(2, plantillasFiltradas.size());
     }
 }
