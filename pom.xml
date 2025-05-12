@@ -115,8 +115,7 @@
               <delimiterType>normal</delimiterType>
               <autocommit>true</autocommit>
               <srcFiles>
-                <srcFile>src/main/sql/insert_roles.sql</srcFile>
-                <srcFile>src/main/sql/insert_users.sql</srcFile>
+                
               </srcFiles>
             </configuration>
           </execution>

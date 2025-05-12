@@ -36,6 +36,13 @@ public class App {
     private static PlanService planService = new PlanServiceImpl();
     private static Scanner scanner = new Scanner(System.in);
 
+    private static final String RESET = "\u001B[0m";
+    private static final String RED = "\u001B[31m";
+    private static final String GREEN = "\u001B[32m";
+    private static final String YELLOW = "\u001B[33m";
+    private static final String BLUE = "\u001B[34m";
+    private static final String BLANCO = "\u001B[01m";
+
     private static void init() {
         try (EntityManager em = AppEntityManagerFactory.getInstance().createEntityManager()) {
             // Initialize the database if necessary
@@ -48,19 +55,20 @@ public class App {
     }
 
     private static Command getCommand() {
-        System.out.println("Choose an option:");
-        System.out.println("  1) Create Paquete");
-        System.out.println("  2) Create Plantilla");
-        System.out.println("  3) Create Plan Específico");
-        System.out.println("  q) Exit");
+        System.out.println(YELLOW + "Choose an option:" + RESET);
+        System.out.println(BLANCO + "  1) Create Paquete" + RESET);
+        System.out.println(BLANCO + "  2) Create Plantilla" + RESET);
+        System.out.println(BLANCO + "  3) Create Plan Específico" + RESET);
+        System.out.println(RED + "  q) Exit" + RESET);
+
         while (true) {
-            System.out.print("Option: ");
+            System.out.print(YELLOW + "Option: " + RESET);
             switch (scanner.nextLine()) {
                 case "1": return Command.CREATE_PAQUETE;
                 case "2": return Command.CREATE_PLANTILLA;
                 case "3": return Command.CREATE_PLAN;
                 case "q": return Command.EXIT;
-                default: System.out.println("Invalid option. Try again.");
+                default: System.out.println(RED + "Invalid option. Try again." + RESET);
             }
         }
     }
@@ -74,7 +82,12 @@ public class App {
      * @return the user's input as a string, typically "1" for Yes or "2" for No
      */
     private static String askSave(String className) {
-        System.out.print("Do you want to save the " + className + ":\n  1) Yes\n  2) No\nOption: ");
+        System.out.print(YELLOW + "Do you want to save the " + className + ":\n  " +
+            GREEN + "1) Yes\n  " +
+            RED + "2) No\n" +
+            YELLOW + "Option: " + RESET
+        );
+
         return scanner.nextLine();
     }
 
@@ -86,7 +99,7 @@ public class App {
      * @return the trimmed input string
      */
     private static String introduceString (String className, String fieldName) {
-        System.out.print("Enter " + className + " " + fieldName + ": ");
+        System.out.print(BLUE + "Enter " + className + " " + fieldName + ": " + RESET);
         return scanner.nextLine().trim();
     }
     
@@ -123,7 +136,7 @@ public class App {
      * @return a list of unique, trimmed values, or null if input is empty or only contained empty entries
      */
     private static List<String> introduceList (String className, String fieldName) {
-        System.out.print("Enter " + className + " " + fieldName + " (comma-separated): ");
+        System.out.print(BLUE + "Enter " + className + " " + fieldName + " (comma-separated): " + RESET);
         String input = scanner.nextLine().trim();
 
         if (input.isEmpty()) return null;
@@ -159,7 +172,7 @@ public class App {
     private static LocalDate introduceDate (String className, String fieldName, String extra) {
         LocalDate date;
 
-        System.out.print("Enter " + className + " " + fieldName + " (yyyy-mm-dd)" + extra + ": ");
+        System.out.print(BLUE + "Enter " + className + " " + fieldName + " (yyyy-mm-dd)" + extra + ": " + RESET);
         String input = scanner.nextLine().trim();
 
         try {
@@ -204,7 +217,7 @@ public class App {
     private static double introduceNumber (String className, String fieldName) {
         double n;
 
-        System.out.print("Enter " + className + " " + fieldName + ": ");
+        System.out.print(BLUE + "Enter " + className + " " + fieldName + ": " + RESET);
         String input = scanner.nextLine().trim();
         try {
             n = Double.parseDouble(input);
@@ -260,11 +273,11 @@ public class App {
         while (true) {
             try {
                 paqueteService.createPaquete(paquete);
-                System.out.println("Paquete created successfully.");
+                System.out.println(GREEN + "Paquete created successfully." + RESET);
                 System.out.println("Details: " + paquete.toString());
                 break;
             } catch (PaqueteAlreadyExistsException e) {
-                System.out.println("Error: " + e.getMessage());
+                System.out.println(RED + "Error: " + e.getMessage() + RESET);
                 
                 Paquete existent;
                 try {
@@ -310,7 +323,7 @@ public class App {
                     vActivities && vStartDate && vEndDate && vPrice && vRequiredPeople;
 
             if (!valid) {
-                System.out.println("Some mandatory fields are invalid. Please correct them:");
+                System.out.println(RED + "Some mandatory fields are invalid. Please correct them:" + RESET);
                 if (!vName) paquete.setName(null);
                 if (!vDescription) paquete.setDescription(null);
                 if (!vDestination) paquete.setDestination(null);
@@ -357,18 +370,18 @@ public class App {
         while (true) {
             try {
                 plantillaService.createPlantilla(plantilla);
-                System.out.println("Plantilla created successfully.");
+                System.out.println(GREEN + "Plantilla created successfully." + RESET);
                 System.out.println("Details: " + plantilla.toString());
                 break;
             } catch (PlantillaAlreadyExistsException e) {
-                System.out.println("Error: " + e.getMessage());
+                System.out.println(RED + "Error: " + e.getMessage() + RESET);
     
                 try {
                     Plantilla existent = plantillaService.getPlantillaByName(plantilla.getName());
                     System.out.println("Existent Plantilla: " + existent);
                     plantilla.setName(introduceString("Plantilla", "name"));
                 } catch (PlantillaNotFoundException e1) { // Esto no debería ocurrir
-                    System.out.println("Unexpected error: " + e1.getMessage());
+                    System.out.println(RED + "Unexpected error: " + e1.getMessage() + RESET);
                 }
             }
         }
@@ -403,7 +416,7 @@ public class App {
                     vActivities;
 
             if (!valid) {
-                System.out.println("Some mandatory fields are invalid. Please correct them:");
+                System.out.println(RED + "Some mandatory fields are invalid. Please correct them:" + RESET);
                 if (!vName) plantilla.setName(null);
                 if (!vDescription) plantilla.setDescription(null);
                 if (!vDestination) plantilla.setDestination(null);
@@ -423,16 +436,16 @@ public class App {
      * Calls the corresponding method based on the user's input.
      */
     private static void createPlan() {
-        System.out.println("Do you want to base the Plan on:");
-        System.out.println("  1) A Plantilla");
-        System.out.println("  2) A Paquete");
-        System.out.print("Option: ");
+        System.out.println(YELLOW + "Do you want to base the Plan on:" + RESET);
+        System.out.println(BLANCO + "  1) A Plantilla" + RESET);
+        System.out.println(BLANCO + "  2) A Paquete" + RESET);
+        System.out.print(YELLOW + "Option: " + RESET);
         String option = scanner.nextLine();
 
         switch (option) {
             case "1" -> createPlanFromPlantilla();
             case "2" -> createPlanFromPaquete();
-            default -> System.out.println("Invalid option.");
+            default -> System.out.println(RED + "Invalid option." + RESET);
         }
     }
 
@@ -447,25 +460,25 @@ public class App {
      */
     private static <T> T chooseFromList (List<T> items, String className, Function<T, String> nameExtractor) {
         if (items.isEmpty()) {
-            System.out.println("No " + className + "s available to base the Plan on.");
+            System.out.println(RED + "No " + className + "s available to base the Plan on." + RESET);
             return null;
         }
     
-        System.out.println("Available " + className + "s:");
+        System.out.println(BLUE + "Available " + className + "s:" + RESET);
         for (int i = 0; i < items.size(); i++) {
             System.out.println((i + 1) + ") " + nameExtractor.apply(items.get(i)));
         }
     
-        System.out.print("Choose a " + className + ": ");
+        System.out.print(YELLOW + "Choose a " + className + ": " + RESET);
         try {
             int choice = Integer.parseInt(scanner.nextLine()) - 1;
             if (choice < 0 || choice >= items.size()) {
-                System.out.println("Invalid choice.");
+                System.out.println(RED + "Invalid choice." + RESET);
                 return null;
             }
             return items.get(choice);
         } catch (NumberFormatException e) {
-            System.out.println("Invalid input. Must be a number.");
+            System.out.println(RED + "Invalid input. Must be a number." + RESET);
             return null;
         }
     }
@@ -478,7 +491,7 @@ public class App {
      * @param list      the list of values to display
      */
     private static void printList (String fieldName, List<String> list) {
-        System.out.println("Current " + fieldName + ": " + (list != null ? String.join(", ", list) : "none")); // Validation just in case, although there should always be at least one.
+        System.out.println(BLUE + "Current " + fieldName + ": " + (list != null ? String.join(", ", list) : "none") + RESET); // Validation just in case, although there should always be at least one.
     }
 
     /**
@@ -489,7 +502,7 @@ public class App {
      * @param addFunction a Consumer that adds a single value to the list
      */
     private static void introduceExtraList(String fieldName, Consumer<String> addFunction) {
-        System.out.print("Add Plan extra " + fieldName + " (comma-separated) or press Enter to skip: ");
+        System.out.print(BLUE + "Add Plan extra " + fieldName + " (comma-separated) or press Enter to skip: " + RESET);
         String list = scanner.nextLine().trim();
 
         if (!list.isEmpty()) {
@@ -513,21 +526,21 @@ public class App {
         while (true) {
             try {
                 planService.createPlan(plan);
-                System.out.println("Plan created successfully.");
+                System.out.println(GREEN + "Plan created successfully." + RESET);
                 System.out.println("Details: " + plan.toString());
                 break;
             } catch (PlanAlreadyExistsException e) {
-                System.out.println("Error: " + e.getMessage());
+                System.out.println(RED + "Error: " + e.getMessage() + RESET);
     
                 try {
                     Plan existent = planService.getPlanByName(plan.getName());
                     System.out.println("Existent Plan: " + existent);
                     plan.setName(introduceString("Plan", "name"));
                 } catch (PlanNotFoundException e1) { // Esto no debería ocurrir
-                    System.out.println("Unexpected error: " + e1.getMessage());
+                    System.out.println(RED + "Unexpected error: " + e1.getMessage() + RESET);
                 }
             } catch (PlanInvalidInheritanceException e1) {
-                System.out.println("Error: " + e1.getMessage());
+                System.out.println(RED + "Error: " + e1.getMessage() + RESET);
                 return;
             }
         }
@@ -615,7 +628,7 @@ public class App {
             valid = vName && vDescription;
 
             if (!valid) {
-                System.out.println("Some mandatory fields are invalid. Please correct them:");
+                System.out.println(RED + "Some mandatory fields are invalid. Please correct them:" + RESET);
                 if (!vName) plan.setName(null);
                 if (!vDescription) plan.setDescription(null);
             }
@@ -636,7 +649,7 @@ public class App {
      * @param deleteFunction a Consumer that eliminates a single value to the list
      */
     private static void deleteList(String fieldName, Consumer<String> deleteFunction) {
-        System.out.print("Delete from Plan " + fieldName + " (comma-separated) or press Enter to skip: ");
+        System.out.print(RED + "Delete from Plan " + fieldName + " (comma-separated) or press Enter to skip: " + RESET);
         String list = scanner.nextLine().trim();
 
         if (!list.isEmpty()) {
@@ -666,18 +679,18 @@ public class App {
             }
             else {
                 printList(fieldName, getListFunction.get());
-                System.out.println("Do you want to:");
-                System.out.println("  1) Add a " + fieldName);
-                System.out.println("  2) Eliminate a " + fieldName);
-                System.out.println("  3) Keep the actual " + fieldName + " list");
-                System.out.print("Option: ");
+                System.out.println(YELLOW + "Do you want to:" + RESET);
+                System.out.println(GREEN + "  1) Add a " + fieldName + RESET);
+                System.out.println(RED + "  2) Eliminate a " + fieldName + RESET);
+                System.out.println(BLUE + "  3) Keep the actual " + fieldName + " list" + RESET);
+                System.out.print(YELLOW + "Option: " + RESET);
                 String option = scanner.nextLine();
                 
                 switch (option) {
                     case "1" -> introduceExtraList(fieldName, addFunction);
                     case "2" -> deleteList(fieldName, deleteFunction);
                     case "3" -> {return;}
-                    default -> System.out.println("Invalid option.");
+                    default -> System.out.println(RED + "Invalid option." + RESET);
                 }
             }
         }
@@ -741,7 +754,7 @@ public class App {
                     vActivities && vStartDate && vEndDate && vPrice;
 
             if (!valid) {
-                System.out.println("Some mandatory fields are invalid. Please correct them:");
+                System.out.println(RED + "Some mandatory fields are invalid. Please correct them:" + RESET);
             }
 
             firstIteration = false;
@@ -764,7 +777,7 @@ public class App {
                 case EXIT -> exit = true;
             }
         }
-        System.out.println("Exiting... shutting down resources");
+        System.out.println(RED + "Exiting... shutting down resources" + RESET);
         try {
             DriverManager.getConnection("jdbc:derby:;shutdown=true"); // Cierra Derby embebido explícitamente al salir.
         } catch (SQLException e) {
@@ -774,6 +787,6 @@ public class App {
             }
         }
         shutdown();
-        System.out.println("Shutdown complete. Goodbye!");
+        System.out.println(RED + "Shutdown complete. Goodbye!" + RESET);
     }
 }
