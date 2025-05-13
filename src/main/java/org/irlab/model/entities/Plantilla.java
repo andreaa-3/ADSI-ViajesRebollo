@@ -1,6 +1,5 @@
 package org.irlab.model.entities;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.Column;
