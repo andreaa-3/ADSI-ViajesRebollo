@@ -95,6 +95,5 @@ The scripts must be individually included in ```pom.xml``` in order to be detect
 (...)
 ```
 
-1) mvn exec:java
-2) mvn sql:execute
-3) BDvare, Derby embebido para ver la BD.
+1) mvn test
+2) mvn exec:java
