@@ -32,12 +32,6 @@ Runs tests allocated in ```src/test```. By default, ```src/test/resources/META-I
 mvn package
 ```
 
-Runs tests and packages the app inside ```target/```. 
-
-```shell
-mvn exec:java -Dexec.mainClass=org.irlab.App
-```
-
 #### Populating the database
 
 Initially, two sql scripts are included within ```src/main/resources/sql/```. Each one of those includes an ```INSERT``` sql statement to populate a specific table of the database.  The following maven goal execute the scripts:
@@ -95,5 +89,17 @@ The scripts must be individually included in ```pom.xml``` in order to be detect
 (...)
 ```
 
-1) mvn test
-2) mvn exec:java
+#### How to build and run
+
+## 1. Compile the project
+mvn clean compile
+
+## 2. Run the application
+mvn exec:java
+
+## 3. Run test
+mvn test
+
+## 4. If the tests fail, delete the contents of the sampleDb folder.
+
+## 5. On the first run, the application does not have any default packages or templates, so in order to create a plan, you must first create either a package or a template.
